@@ -85,8 +85,8 @@ class OpenAIResponsesClient(LLMClient):
                     yield StreamEvent(type="completed", response=self._to_model_response(response))
                 elif event_type in {"response.failed", "error"}:
                     message = getattr(event, "message", "") or getattr(event, "error", "")
-                    raise LLMError(str(message) or f"Falha na API: {event_type}")
+                    raise LLMError(str(message) or f"API failure: {event_type}")
         except LLMError:
             raise
         except Exception as exc:
-            raise LLMError(f"Falha ao chamar a OpenAI: {exc}") from exc
+            raise LLMError(f"OpenAI call failed: {exc}") from exc

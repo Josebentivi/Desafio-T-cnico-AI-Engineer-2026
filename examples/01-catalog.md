@@ -4,11 +4,11 @@
 
 **Assistant:** Here are a few available options:
 
-- **Tagima Memphis AC-39 Nylon Natural** — R$ 429.90 (15 in stock)
-- **Rozini RC-104 Nylon Estudante** — R$ 459.90 (10 in stock)
-- **Yamaha C40 Nylon Natural** — R$ 599.90 (12 in stock)
-- **Yamaha C70 Nylon Natural** — R$ 849.00 (8 in stock)
-- **Tagima Woodstock Dreadnought Natural** — R$ 899.00 (11 in stock)
+- **Tagima Memphis AC-39 Nylon Natural** — R$ 429,90 (15 in stock)
+- **Rozini RC-104 Nylon Estudante** — R$ 459,90 (10 in stock)
+- **Yamaha C40 Nylon Natural** — R$ 599,90 (12 in stock)
+- **Yamaha C70 Nylon Natural** — R$ 849,00 (8 in stock)
+- **Tagima Woodstock Dreadnought Natural** — R$ 899,00 (11 in stock)
 
 All of them are active and available. Would you like to compare body style, string type, or finish?
 

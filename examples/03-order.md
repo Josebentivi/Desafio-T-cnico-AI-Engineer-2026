@@ -5,7 +5,7 @@
 **Assistant:** I found **order 1** for Pedro Henrique Oliveira, and it is marked as **delivered**.
 
 - **Item:** Martin D-28 Dreadnought Natural (1 unit)
-- **Total:** R$ 11,499.00
+- **Total:** R$ 11.499,00
 - **Payment:** PIX
 - **Tracking:** BRAB1234567BR
 

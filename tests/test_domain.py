@@ -13,6 +13,8 @@ from app.domain.store import store_status
 def test_money_helpers():
     assert parse_brl_to_cents("R$ 1.299,90") == 129990
     assert parse_brl_to_cents("R$ 1.000") == 100000
+    assert parse_brl_to_cents("R$ 11,499.00") == 1149900
+    assert parse_brl_to_cents("R$ 11.499,00") == 1149900
     assert parse_brl_to_cents("599.9") == 59990
     assert format_brl(129990) == "R$ 1.299,90"
 
@@ -38,11 +40,27 @@ def test_catalog_search_filters_and_availability(conn):
 def test_catalog_english_query_and_category_aliases(conn):
     catalog = CatalogService(conn)
 
-    acoustic = catalog.search(query="acoustic guitar", only_available=True, limit=20)
-    assert any(product["category"] == "Violões" for product in acoustic)
+    acoustic = catalog.search(query="acoustic guitar", only_available=True, limit=5)
+    assert acoustic
+    assert all(product["category_id"] == 5 for product in acoustic)
 
-    ukuleles = catalog.search(query="ukulele", only_available=True, limit=20)
-    assert any(product["category"] == "Ukuleles" for product in ukuleles)
+    electric = catalog.search(query="electric guitar", only_available=True, limit=5)
+    assert electric
+    assert all(product["category_id"] == 1 for product in electric)
+
+    classical = catalog.search(query="classical guitar", only_available=True, limit=5)
+    assert classical
+    assert all(product["category_id"] == 5 for product in classical)
+
+    ukuleles = catalog.search(query="ukulele", only_available=True, limit=5)
+    assert ukuleles
+    assert all(product["category_id"] == 9 for product in ukuleles)
+
+    basses_by_query = catalog.search(
+        query="Music Man Bass 1X Electric Bass", only_available=True, limit=5
+    )
+    assert basses_by_query
+    assert all(product["category_id"] == 2 for product in basses_by_query)
 
     category = catalog.search(category="Acoustic guitars", only_available=True, limit=20)
     assert category

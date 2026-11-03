@@ -162,3 +162,24 @@ def expand_policy_query(query: str) -> str:
 
 def resolve_category_id(category: str) -> int | None:
     return CATEGORY_ALIASES.get(normalize_text(category))
+
+
+def resolve_query_category_ids(query: str) -> set[int] | None:
+    normalized = normalize_text(query)
+    matches: list[tuple[int, int]] = []
+    for phrase, category_id in CATEGORY_ALIASES.items():
+        if re.search(rf"\b{re.escape(phrase)}\b", normalized):
+            matches.append((len(phrase), category_id))
+    if not matches:
+        return None
+    longest = max(length for length, _ in matches)
+    category_ids = {
+        category_id for length, category_id in matches if length == longest
+    }
+    if (
+        category_ids == {1}
+        and re.search(r"\b(guitar|guitars)\b", normalized)
+        and "electric guitar" not in normalized
+    ):
+        return {1, 5}
+    return category_ids

@@ -4,6 +4,20 @@ import re
 from decimal import ROUND_HALF_UP, Decimal
 
 
+def _normalize_number(text: str) -> str:
+    if "," in text and "." in text:
+        if text.rfind(",") > text.rfind("."):
+            return text.replace(".", "").replace(",", ".")
+        return text.replace(",", "")
+    if "," in text:
+        if re.fullmatch(r"\d{1,3}(?:,\d{3})+", text):
+            return text.replace(",", "")
+        return text.replace(",", ".")
+    if re.fullmatch(r"\d{1,3}(?:\.\d{3})+", text):
+        return text.replace(".", "")
+    return text
+
+
 def parse_brl_to_cents(value: str | int | float | Decimal) -> int:
     if isinstance(value, int):
         return value * 100
@@ -13,11 +27,7 @@ def parse_brl_to_cents(value: str | int | float | Decimal) -> int:
         decimal_value = value
     else:
         text = str(value).strip().replace("R$", "").replace(" ", "")
-        if "," in text:
-            text = text.replace(".", "").replace(",", ".")
-        elif re.fullmatch(r"\d{1,3}(?:\.\d{3})+", text):
-            text = text.replace(".", "")
-        decimal_value = Decimal(text)
+        decimal_value = Decimal(_normalize_number(text))
     return int((decimal_value * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 

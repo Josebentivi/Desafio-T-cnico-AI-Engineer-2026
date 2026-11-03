@@ -4,6 +4,7 @@ import asyncio
 import json
 from dataclasses import replace
 
+from app.agent.guardrails import grounding_warnings
 from app.agent.orchestrator import Agent
 from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.tools import Toolbox
@@ -19,6 +20,12 @@ def make_agent(conn, settings, turns):
 
 def test_system_prompt_requires_english():
     assert "Always answer in English" in SYSTEM_PROMPT
+
+
+def test_grounding_accepts_both_currency_formats():
+    outputs = [{"total_cents": 1149900, "total_brl": "R$ 11.499,00"}]
+    assert grounding_warnings("The total is R$ 11,499.00", outputs, 1) == []
+    assert grounding_warnings("The total is R$ 11.499,00", outputs, 1) == []
 
 
 def test_agent_executes_tool_and_persists(conn, settings):

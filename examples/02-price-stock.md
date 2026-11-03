@@ -2,9 +2,9 @@
 
 **Customer:** How much is the Yamaha C40? Do you have it in stock?
 
-**Assistant:** The **Yamaha C40 Nylon Natural** is **R$ 599.90**, and we have **12 units** in stock.
+**Assistant:** The **Yamaha C40 Nylon Natural** is **R$ 599,90**, and we have **12 units** in stock.
 
-It is active and has no current promotion. With the **5% PIX discount**, it comes to **R$ 569.91**. We also accept debit card, boleto, and credit card, subject to the minimum installment.
+It is active and has no current promotion. With the **5% PIX discount**, it comes to **R$ 569,91**. We also accept debit card, boleto, and credit card, subject to the minimum installment.
 
 Would you like more details about its specifications or payment options?
 

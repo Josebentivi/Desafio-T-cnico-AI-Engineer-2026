@@ -7,6 +7,7 @@ from app.domain.money import format_brl, parse_brl_to_cents
 
 BRL_RE = re.compile(
     r"R\$\s*\d{1,3}(?:\.\d{3})+(?:,\d{2})?"
+    r"|R\$\s*\d{1,3}(?:,\d{3})+(?:\.\d{2})?"
     r"|R\$\s*\d+\.\d{1,2}"
     r"|R\$\s*\d+(?:,\d{2})?"
 )

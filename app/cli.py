@@ -41,7 +41,7 @@ async def _ask(agent: Agent, session_id: str, message: str) -> None:
         if event["type"] == "token":
             print(event["text"], end="", flush=True)
         elif event["type"] == "tool_call":
-            print(f"\n[consulta: {event['name']}]", file=sys.stderr)
+            print(f"\n[lookup: {event['name']}]", file=sys.stderr)
         elif event["type"] == "done":
             print()
         elif event["type"] == "error":

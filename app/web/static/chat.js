@@ -109,7 +109,7 @@
         headers: { Accept: "text/event-stream" },
       });
       if (!response.ok || !response.body) {
-        throw new Error(`Falha no servidor (${response.status})`);
+        throw new Error(`Server error (${response.status})`);
       }
 
       const reader = response.body.getReader();
@@ -157,7 +157,7 @@
               assistant.wrapper.appendChild(warning);
             }
           } else if (eventName === "error") {
-            finalText = data.message || "Ocorreu um erro.";
+            finalText = data.message || "An error occurred.";
             assistant.bubble.textContent = finalText;
             assistant.bubble.classList.remove("streaming");
           }

@@ -5,7 +5,11 @@ import sqlite3
 
 from app.domain.money import discount_cents, format_brl, pix_cents
 from app.domain.payments import payment_options
-from app.domain.search_aliases import expand_catalog_query, resolve_category_id
+from app.domain.search_aliases import (
+    expand_catalog_query,
+    resolve_category_id,
+    resolve_query_category_ids,
+)
 
 STATUS_LABELS = {
     "active": "active",
@@ -113,6 +117,7 @@ class CatalogService:
         """
         params: list = []
         where: list[str] = []
+        query_category_ids = resolve_query_category_ids(query or "") if query else None
         fts = fts_query(expand_catalog_query(query or ""))
         if fts:
             sql += " JOIN product_fts ON product_fts.product_id = p.product_id "
@@ -129,6 +134,10 @@ class CatalogService:
             else:
                 where.append("c.name LIKE ?")
                 params.append(f"%{category.strip()}%")
+        elif query_category_ids:
+            placeholders = ", ".join("?" for _ in query_category_ids)
+            where.append(f"p.category_id IN ({placeholders})")
+            params.extend(sorted(query_category_ids))
         if min_price_brl is not None:
             where.append("p.price_cents >= ?")
             params.append(round(min_price_brl * 100))

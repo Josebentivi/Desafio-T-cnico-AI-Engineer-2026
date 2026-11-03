@@ -84,7 +84,7 @@ ruff check app scripts tests
 node --check app/web/static/chat.js
 ```
 
-The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. There are **41 tests** covering ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes.
+The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. There are **43 tests** covering ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes.
 
 ### 5. Re-extract the manual (optional)
 
@@ -256,7 +256,7 @@ data/
   *.csv                    # operational data (Portuguese)
   políticas_da_loja.pdf    # policy manual (Portuguese)
   policy_sections.json     # extracted, reviewed sections
-tests/                     # 41 tests
+tests/                     # 43 tests
 scripts/
   extract_policy.py        # PDF -> sections
 examples/                  # English example conversations
