@@ -12,6 +12,16 @@ CATEGORY_ALIASES = {
     "guitarras": 1,
     "bass": 2,
     "basses": 2,
+    "bass guitar": 2,
+    "bass guitars": 2,
+    "electric bass": 2,
+    "electric basses": 2,
+    "electric bass guitar": 2,
+    "electric bass guitars": 2,
+    "acoustic bass": 2,
+    "acoustic basses": 2,
+    "double bass": 2,
+    "upright bass": 2,
     "baixo": 2,
     "baixos": 2,
     "drum": 3,
@@ -64,6 +74,16 @@ CATALOG_QUERY_SYNONYMS = {
     "electric guitar": "guitarra",
     "guitars": "guitarra violão",
     "guitar": "guitarra violão",
+    "bass guitars": "baixo",
+    "bass guitar": "baixo",
+    "electric bass guitars": "baixo",
+    "electric bass guitar": "baixo",
+    "electric basses": "baixo",
+    "electric bass": "baixo",
+    "acoustic basses": "baixo",
+    "acoustic bass": "baixo",
+    "double bass": "baixo",
+    "upright bass": "baixo",
     "basses": "baixo",
     "bass": "baixo",
     "drums": "bateria",
@@ -166,20 +186,28 @@ def resolve_category_id(category: str) -> int | None:
 
 def resolve_query_category_ids(query: str) -> set[int] | None:
     normalized = normalize_text(query)
-    matches: list[tuple[int, int]] = []
+    matches: list[tuple[int, int, int, str]] = []
     for phrase, category_id in CATEGORY_ALIASES.items():
-        if re.search(rf"\b{re.escape(phrase)}\b", normalized):
-            matches.append((len(phrase), category_id))
+        pattern = rf"\b{re.escape(phrase)}\b"
+        for match in re.finditer(pattern, normalized):
+            matches.append((match.start(), match.end(), category_id, phrase))
     if not matches:
         return None
-    longest = max(length for length, _ in matches)
-    category_ids = {
-        category_id for length, category_id in matches if length == longest
-    }
-    if (
-        category_ids == {1}
-        and re.search(r"\b(guitar|guitars)\b", normalized)
-        and "electric guitar" not in normalized
+
+    selected: list[tuple[int, int, int, str]] = []
+    occupied: list[tuple[int, int]] = []
+    for start, end, category_id, phrase in sorted(
+        matches, key=lambda item: (-(item[1] - item[0]), item[0])
     ):
-        return {1, 5}
-    return category_ids
+        if any(not (end <= used_start or start >= used_end) for used_start, used_end in occupied):
+            continue
+        occupied.append((start, end))
+        selected.append((start, end, category_id, phrase))
+
+    category_ids: set[int] = set()
+    for _, _, category_id, phrase in selected:
+        if category_id == 1 and phrase in {"guitar", "guitars"}:
+            category_ids.update({1, 5})
+        else:
+            category_ids.add(category_id)
+    return category_ids or None

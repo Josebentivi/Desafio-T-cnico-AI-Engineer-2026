@@ -75,6 +75,25 @@ def test_catalog_english_query_and_category_aliases(conn):
     assert all(product["category"] == "Baixos" for product in basses)
 
 
+def test_catalog_compound_and_multi_category_queries(conn):
+    catalog = CatalogService(conn)
+
+    for query in ["bass guitar", "electric bass guitar"]:
+        results = catalog.search(query=query, only_available=True, limit=5)
+        assert results
+        assert all(product["category_id"] == 2 for product in results)
+
+    multi = {
+        "guitars and ukuleles": {1, 5, 9},
+        "guitars and keyboards": {1, 4, 5},
+        "bass guitar and ukulele": {2, 9},
+        "acoustic guitars and electric guitars": {1, 5},
+    }
+    for query, expected in multi.items():
+        results = catalog.search(query=query, only_available=True, limit=6)
+        assert expected.issubset({product["category_id"] for product in results})
+
+
 def test_catalog_status_traps(conn):
     catalog = CatalogService(conn)
     discontinued = catalog.get_product(136)

@@ -152,9 +152,31 @@ class CatalogService:
             sql += " ORDER BY bm25(product_fts), p.price_cents"
         else:
             sql += " ORDER BY p.price_cents, p.name"
+        limit = max(1, min(int(limit), 200))
+        diversify = bool(query_category_ids and not category and len(query_category_ids) > 1)
+        sql_limit = max(limit, 50) if diversify else limit
         sql += " LIMIT ?"
-        params.append(max(1, min(int(limit), 200)))
-        return [_product_payload(row) for row in self.conn.execute(sql, params)]
+        params.append(sql_limit)
+        rows = list(self.conn.execute(sql, params))
+
+        if diversify:
+            grouped: dict[int, list] = {}
+            for row in rows:
+                grouped.setdefault(row["category_id"], []).append(row)
+            ordered = []
+            while len(ordered) < limit:
+                added = False
+                for category_id in sorted(grouped):
+                    if grouped[category_id]:
+                        ordered.append(grouped[category_id].pop(0))
+                        added = True
+                        if len(ordered) >= limit:
+                            break
+                if not added:
+                    break
+            rows = ordered
+
+        return [_product_payload(row) for row in rows]
 
     def get_product(self, product_id: int) -> dict | None:
         row = self.conn.execute(
