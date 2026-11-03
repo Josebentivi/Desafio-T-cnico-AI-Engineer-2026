@@ -1,20 +1,20 @@
-# Exemplo 5 — Pedido fora do escopo
+# Example 5 — Out-of-scope request
 
-**Cliente:** Vocês vendem cordas de violão?
+**Customer:** Do you sell guitar strings?
 
-**Assistente:** A Empório da Música trabalha exclusivamente com **instrumentos musicais**. Não comercializamos acessórios como cordas, palhetas, cabos, cases, pedais ou amplificadores.
+**Assistant:** Empório da Música works exclusively with **musical instruments**. We do not carry accessories such as strings, picks, cables, cases, pedals, or amplifiers.
 
-Se você estiver procurando cordas, vale a pena consultar uma loja de acessórios ou um parceiro da região. Por aqui eu posso te ajudar com violões, ukuleles, guitarras, baixos, baterias, teclados e instrumentos de orquestra que estejam no catálogo.
+If you are looking for strings, it is worth checking an accessory store or a local partner. Here I can help with acoustic guitars, ukuleles, electric guitars, basses, drums, keyboards, and orchestral instruments that are in the catalog.
 
-Quer que eu te mostre alguns violões disponíveis?
+Would you like me to show you some available acoustic guitars?
 
-**Consulta interna**
+**Internal lookup**
 
 ```text
 search_policy(
-  query="escopo acessórios cordas palhetas cabos",
+  query="accessories strings picks cables",
   top_k=2
 )
 ```
 
-O agente redireciona sem inventar parceiros ou produtos que a loja não vende.
+The agent redirects politely without inventing partner stores or products the store does not sell.

@@ -1,20 +1,20 @@
-# Exemplo 4 — Direito de arrependimento
+# Example 4 — Right of withdrawal
 
-**Cliente:** Me arrependi da compra online. Posso devolver?
+**Customer:** I changed my mind about an online purchase. Can I return it?
 
-**Assistente:** Pode sim, desde que a solicitação seja feita em até **7 dias corridos após o recebimento** do produto. Para a devolução ser aceita, o instrumento precisa estar na embalagem original, sem sinais de uso e com todos os acessórios e manuais.
+**Assistant:** Yes, as long as you request the return within **7 calendar days of receiving the product**. The instrument must be in its original packaging, with no signs of use, and include all accessories and manuals.
 
-O frete de devolução fica por conta da loja nesse caso, e o reembolso é feito na mesma forma de pagamento original em até **10 dias úteis**.
+In this case, return shipping is covered by the store, and the refund is issued to the original payment method within **10 business days**.
 
-Para eu te orientar direitinho, me passa o número do pedido e a data em que você recebeu o instrumento. Se a compra tiver sido de um item personalizado, de venda final ou de uma boquilha de sopro, a troca não se aplica.
+To guide you, please send the order number and the date you received the instrument. If the purchase was a customized item, a final-sale item, or a wind mouthpiece, the return does not apply.
 
-**Consulta interna**
+**Internal lookup**
 
 ```text
 search_policy(
-  query="direito de arrependimento devolução compra online",
+  query="return policy",
   top_k=3
 )
 ```
 
-A resposta aplica a seção **4.1** do manual. O agente não inventou um prazo nem prometeu reembolso fora da política.
+The answer applies section **4.1** of the manual. The agent did not invent a deadline or promise a refund outside the policy. The English query was expanded to the Portuguese policy terms (`devolução`, `arrependimento`) before the hybrid search.

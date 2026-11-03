@@ -1,25 +1,26 @@
-# Exemplo 1 — Busca no catálogo
+# Example 1 — Catalog search
 
-**Cliente:** Quais violões vocês têm até R$ 1.000?
+**Customer:** Which acoustic guitars do you have under R$ 1,000?
 
-**Assistente:** Separei algumas opções de violão que cabem no seu orçamento:
+**Assistant:** Here are a few available options:
 
-- **Yamaha C40 Nylon Natural** — R$ 599,90 (12 em estoque)
-- **Yamaha C70 Nylon Natural** — R$ 849,00 (8 em estoque)
-- **Tagima Woodstock Dreadnought Natural** — R$ 899,00 (11 em estoque)
-- **Rozini RC-104 Nylon Estudante** — R$ 459,90 (10 em estoque)
+- **Tagima Memphis AC-39 Nylon Natural** — R$ 429.90 (15 in stock)
+- **Rozini RC-104 Nylon Estudante** — R$ 459.90 (10 in stock)
+- **Yamaha C40 Nylon Natural** — R$ 599.90 (12 in stock)
+- **Yamaha C70 Nylon Natural** — R$ 849.00 (8 in stock)
+- **Tagima Woodstock Dreadnought Natural** — R$ 899.00 (11 in stock)
 
-Todas estão ativas e disponíveis. Se quiser, posso comparar o tamanho, o tipo de corda ou o acabamento de alguma delas.
+All of them are active and available. Would you like to compare body style, string type, or finish?
 
-**Consulta interna**
+**Internal lookup**
 
 ```text
 search_products(
-  query="violão",
+  query="acoustic guitar",
   max_price_brl=1000,
   only_available=true,
   limit=10
 )
 ```
 
-O agente só listou produtos presentes no CSV e com `status = active` e estoque positivo.
+The agent only listed products present in the CSV with `status = active` and positive stock. The English query was expanded to the Portuguese catalog terms (`violão`) before the FTS5 search.

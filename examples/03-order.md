@@ -1,17 +1,17 @@
-# Exemplo 3 — Status de pedido com verificação
+# Example 3 — Order status with verification
 
-**Cliente:** Qual o status do pedido 1? Meu nome é Pedro Henrique Oliveira.
+**Customer:** What is the status of order 1? My name is Pedro Henrique Oliveira.
 
-**Assistente:** Encontrei o **pedido 1**, do Pedro Henrique Oliveira, e ele consta como **entregue**.
+**Assistant:** I found **order 1** for Pedro Henrique Oliveira, and it is marked as **delivered**.
 
-- **Item:** Martin D-28 Dreadnought Natural (1 unidade)
-- **Total:** R$ 11.499,00
-- **Pagamento:** PIX
-- **Rastreio:** BRAB1234567BR
+- **Item:** Martin D-28 Dreadnought Natural (1 unit)
+- **Total:** R$ 11,499.00
+- **Payment:** PIX
+- **Tracking:** BRAB1234567BR
 
-A entrega estimada já passou e o pedido está marcado como entregue. Se precisar de algo sobre a nota, a garantia ou uma troca, me diga.
+The estimated delivery date has passed and the order is marked as delivered. If you need anything about the invoice, warranty, or an exchange, just let me know.
 
-**Consulta interna**
+**Internal lookup**
 
 ```text
 get_order(
@@ -20,4 +20,4 @@ get_order(
 )
 ```
 
-O agente exigiu o número do pedido e um dado do cliente antes de revelar o status. Com um nome que não confere, a ferramenta retorna apenas “não encontrado ou dados não conferem”.
+The agent required both the order number and a customer identifier before revealing the status. With a name that does not match, the tool returns only “not found or details do not match”.

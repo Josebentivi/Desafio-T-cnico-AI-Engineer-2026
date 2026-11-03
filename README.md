@@ -1,20 +1,22 @@
-# Empório da Música — agente de atendimento
+# Empório da Música — Customer Service Agent
 
-Agente de mensagens de texto para a fictícia **Empório da Música**, loja de instrumentos musicais de Campo Grande/MS. O projeto foi construído para o desafio técnico de AI Engineer da Artefact.
+Text-message customer service agent for the fictional **Empório da Música**, a musical instrument store in Campo Grande/MS, Brazil. This project was built for Artefact's AI Engineer take-home challenge.
 
-O agente conversa em português do Brasil, consulta o catálogo e os pedidos no SQLite, recupera regras do manual de políticas e só afirma preço, estoque, prazo ou status depois de consultar uma ferramenta. A interface tem um chat com streaming e um painel operacional somente leitura com catálogo, pedidos, políticas, qualidade dos dados e traces das execuções.
+The agent always replies in **English**. The source CSVs and the policy manual are in Portuguese; the agent translates the meaning around product names, customer names, store names, and policy section numbers. The web UI, CLI, documentation, and example conversations are also in English.
+
+The agent checks the catalog and orders in SQLite, retrieves rules from the policy manual, and only states a price, stock level, deadline, or order status after calling a tool. The app includes a streaming chat and a read-only operational panel with catalog, orders, policies, data quality, and agent traces.
 
 ## Stack
 
 - Python 3.11+
 - FastAPI + Jinja2 + HTMX
 - SQLite + FTS5
-- OpenAI **`gpt-6-luna`** via **Responses API**
-- OpenAI **`text-embedding-3-large`** para busca semântica das políticas
-- `numpy` para similaridade de cosseno
-- `pdfplumber` apenas na extração offline do manual
+- OpenAI **`gpt-6-luna`** via the **Responses API**
+- OpenAI **`text-embedding-3-large`** for semantic policy retrieval
+- `numpy` for cosine similarity
+- `pdfplumber` only for offline policy extraction
 
-## Como rodar
+## How to run
 
 ```bash
 python -m venv .venv
@@ -23,269 +25,296 @@ python -m venv .venv
 
 pip install -r requirements-dev.txt
 cp .env.example .env
-# edite .env e preencha OPENAI_API_KEY
+# edit .env and fill in OPENAI_API_KEY
 ```
 
-O arquivo `.env` concentra o modelo, o provedor, o esforço de reasoning, as dimensões dos embeddings, o caminho do banco e as configurações do servidor. O `OPENAI_API_KEY` nunca deve ser commitado.
+`.env` holds the model, provider, reasoning effort, embedding dimensions, database path, and server settings. Never commit `OPENAI_API_KEY`.
 
-### 1. Ingestão
+### 1. Ingestion
 
 ```bash
 python -m app.data.ingest --reset
 ```
 
-Esse comando:
+This command:
 
-- cria o schema do SQLite;
-- lê os seis CSVs de `data/`;
-- converte dinheiro para centavos e valida datas, status e chaves estrangeiras;
-- extrai as seções do manual de políticas de `data/policy_sections.json`;
-- gera os embeddings das seções com `text-embedding-3-large` (se houver chave);
-- monta os índices FTS5;
-- registra anomalias de dados em `data_quality_issues`.
+- creates the SQLite schema;
+- reads the six CSVs from `data/`;
+- converts money to integer cents and validates dates, statuses, and foreign keys;
+- loads the policy sections from `data/policy_sections.json`;
+- generates section embeddings with `text-embedding-3-large` when a key is available;
+- builds the FTS5 indexes;
+- records data-quality anomalies in `data_quality_issues`.
 
-Sem chave da OpenAI, ou para economizar chamadas:
+Without an OpenAI key, or to avoid embedding calls:
 
 ```bash
 python -m app.data.ingest --reset --skip-embeddings
 ```
 
-Nesse modo a busca de políticas usa apenas FTS5; o chat continua funcionando, mas sem busca semântica.
+In that mode, policy retrieval uses FTS5 only. The chat still works, but without semantic search.
 
-### 2. Servidor
+### 2. Server
 
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 - Chat: http://127.0.0.1:8000/
-- Painel: http://127.0.0.1:8000/ops
-- Saúde: http://127.0.0.1:8000/health
+- Operational panel: http://127.0.0.1:8000/ops
+- Health: http://127.0.0.1:8000/health
 
-Na primeira inicialização, se o banco estiver vazio, o app faz um seed automático dos CSVs sem embeddings. Para a experiência completa, rode a ingestão antes.
+On first startup, if the database is empty, the app seeds the CSVs without embeddings. For the full experience, run ingestion first.
 
 ### 3. CLI
 
 ```bash
 python -m app.cli chat
-python -m app.cli ask "Quais violões vocês têm até R$ 1000?"
+python -m app.cli ask "Which acoustic guitars do you have under R$ 1000?"
 python -m app.cli status
 ```
 
-O CLI é útil para testar o agente sem a interface e para capturar conversas de exemplo.
+The CLI is useful for testing the agent without the UI and for capturing example conversations.
 
-### 4. Testes e lint
+### 4. Tests and lint
 
 ```bash
 python -m pytest -q
 ruff check app scripts tests
+node --check app/web/static/chat.js
 ```
 
-Os testes usam `FakeLLM` e `FakeEmbeddingClient`; não fazem chamadas reais à OpenAI. São 36 testes cobrindo ingestão, dinheiro, catálogo, pedidos, frete, horário, políticas, loop do agente, guardrails e rotas HTTP.
+The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. There are **41 tests** covering ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes.
 
-### 5. Reextrair o manual (opcional)
+### 5. Re-extract the manual (optional)
 
 ```bash
 python scripts/extract_policy.py
 ```
 
-O script usa `pdfplumber` e gera `data/policy_sections.json`. O JSON é commitado para o runtime não depender de parsing de PDF. As tabelas de horário e pagamento foram conferidas manualmente.
+The script uses `pdfplumber` and writes `data/policy_sections.json`. The JSON is committed so the runtime does not depend on PDF parsing. The hours and payment tables were checked manually.
 
-## Arquitetura
+## Architecture
 
 ```text
-Navegador
-  ├─ Jinja2 + HTMX (chat, filtros, painel)
-  └─ fetch/SSE (streaming de tokens)
+Browser
+  ├─ Jinja2 + HTMX (chat, filters, operational panel)
+  └─ fetch/SSE (token streaming)
         │
 FastAPI (app/web/routes.py)
         │
 Agent (app/agent/orchestrator.py)
   ├─ Responses API + tool calling
-  ├─ tools tipadas (app/agent/tools.py)
+  ├─ typed tools (app/agent/tools.py)
   └─ guardrails (app/agent/guardrails.py)
         │
-Domínio (app/domain/)
-  ├─ catálogo, pedidos, promoções
-  ├─ frete, horário da loja
-  └─ busca híbrida de políticas
+Domain (app/domain/)
+  ├─ catalog, orders, promotions
+  ├─ shipping, store hours
+  └─ hybrid policy retrieval
         │
 SQLite
-  ├─ tabelas operacionais
-  ├─ policy_sections + embeddings BLOB
+  ├─ operational tables
+  ├─ policy_sections + embedding BLOBs
   ├─ FTS5 (policy_fts, product_fts)
-  ├─ sessões, mensagens
+  ├─ sessions, messages
   └─ agent_runs, tool_calls, data_quality_issues
 ```
 
-O núcleo do agente não depende de FastAPI. A camada web só apresenta; o domínio não conhece o modelo. Isso permite testar o agente sem servidor e trocar SQLite ou provedor sem reescrever a lógica.
+The agent core does not depend on FastAPI. The web layer only presents; the domain layer does not know the model. This keeps the agent testable without a server and makes it possible to swap SQLite or the provider without rewriting the logic.
 
-## Decisões técnicas
+## Technical decisions
 
-### Modelo e API
+### Model and API
 
-Usei **`gpt-6-luna`** pela relação custo/latência e porque o modelo suporta function calling e streaming. A integração usa a **Responses API** (`v1/responses`): a documentação do modelo indica que o Chat Completions só suporta function calling com `reasoning_effort=none`, enquanto a Responses API suporta o fluxo completo de ferramentas com reasoning.
+I used **`gpt-6-luna`** for its cost/latency profile and because it supports function calling and streaming. The integration uses the **Responses API** (`v1/responses`): the model documentation states that Chat Completions only supports function calling with `reasoning_effort=none`, while the Responses API supports the full tool flow with reasoning.
 
-- `reasoning.effort` vem de `REASONING_EFFORT` no `.env`; o padrão é `low`.
-- `store=False` evita retenção do lado da OpenAI; o estado da conversa fica no SQLite.
-- O loop preserva os itens de reasoning retornados pelo modelo, como a documentação exige para modelos de reasoning com tool calls.
-- `parallel_tool_calls=False` deixa o trace determinístico.
-- O adapter está em `app/llm/openai_responses.py`; trocar de provedor significa implementar o mesmo protocolo.
+- `reasoning.effort` comes from `REASONING_EFFORT` in `.env`; the default is `low`.
+- `store=False` avoids server-side response storage; conversation state lives in SQLite.
+- The loop preserves reasoning items returned by the model, as required for reasoning models with tool calls.
+- `parallel_tool_calls=False` keeps traces deterministic.
+- The adapter is in `app/llm/openai_responses.py`; another provider can implement the same protocol.
 
 ### Interface
 
-FastAPI + Jinja2 + HTMX cobre navegação, filtros e formulários sem build de front-end. O streaming do chat usa um pequeno `fetch` com leitura de SSE em `app/web/static/chat.js`, porque o EventSource do HTMX é GET e o chat precisa enviar uma mensagem por POST. O restante da UI continua em HTMX.
+FastAPI + Jinja2 + HTMX handles navigation, filters, and forms without a front-end build. Chat streaming uses a small `fetch` + SSE reader in `app/web/static/chat.js`, because HTMX's EventSource is GET-only and the chat needs to POST a message. The rest of the UI remains HTMX.
 
-### Banco
+### Database
 
-SQLite é suficiente para 65 produtos, 20 pedidos e 8 páginas de política. Ele dá transações, FTS5, índices e um arquivo único para o demo, sem infraestrutura. O dinheiro é armazenado em **centavos inteiros** para evitar erros de ponto flutuante. Datas ficam em ISO. O banco é gerado por script e não é commitado.
+SQLite is enough for 65 products, 20 orders, and an 8-page policy manual. It provides transactions, FTS5, indexes, and a single file for the demo with no infrastructure. Money is stored as **integer cents** to avoid floating-point errors. Dates are stored as ISO strings. The database is generated by a script and is not committed.
 
-Para o painel operacional e o histórico de conversa, SQLite também resolve. Para multiusuário/concorrência alta, o próximo passo seria Postgres; a camada de repositórios isola o SQL.
+For the operational panel and conversation history, SQLite is also sufficient. For multi-user/high-concurrency production, the next step would be Postgres; the repository layer isolates the SQL.
 
-### Busca das políticas
+### Policy retrieval
 
-O manual é pequeno, então não usei vector database. A estratégia é híbrida:
+The manual is small, so I did not use a vector database. The strategy is hybrid:
 
-1. Extração offline em 26 seções por título real (4.1, 6.2, 7.3 etc.).
-2. Embeddings de `title + text` com `text-embedding-3-large` (3072 dimensões por padrão; configurável).
-3. Busca vetorial por similaridade de cosseno em Python, sobre os vetores armazenados como BLOB.
-4. Busca lexical FTS5 para termos exatos como “PIX”, “90 dias”, “boquilha”.
-5. Fusão dos rankings por Reciprocal Rank Fusion (RRF).
-6. Fallback para FTS5 se não houver chave, embeddings ou rede.
+1. Offline extraction into 26 sections by real headings (4.1, 6.2, 7.3, and so on).
+2. Embeddings of `title + text` with `text-embedding-3-large` (3072 dimensions by default; configurable).
+3. Vector search by cosine similarity in Python over vectors stored as BLOBs.
+4. FTS5 lexical search for exact terms such as “PIX”, “90 days”, and “mouthpiece”.
+5. Rank fusion with Reciprocal Rank Fusion (RRF).
+6. FTS5 fallback if there is no key, no embeddings, or no network.
 
-Não usei `sqlite-vec` nem FAISS: com ~26 seções, força bruta é instantânea e reduz dependências nativas. Se o manual crescer, a interface de retrieval permite trocar a implementação.
+I did not use `sqlite-vec` or FAISS: with ~26 sections, brute force is instant and avoids native dependencies. If the manual grows, the retrieval interface allows the implementation to be replaced.
 
-### Ferramentas do agente
+### English queries against Portuguese data
 
-Não usei “agente SQL” livre. O modelo recebe ferramentas tipadas, com schemas estritos e `additionalProperties: false`:
+The source data and policy manual are in Portuguese, but customers write in English. The agent uses two layers:
 
-| Ferramenta | Uso |
+- **Semantic retrieval:** `text-embedding-3-large` is multilingual, so English questions can match Portuguese policy sections.
+- **Lexical expansion:** `app/domain/search_aliases.py` maps English terms to Portuguese catalog and policy terms before FTS5 search. Examples:
+  - `acoustic guitar` / `classical guitar` → `violão`
+  - `guitar` → `guitarra` / `violão`
+  - `bass` → `baixo`
+  - `drums` → `bateria`
+  - `keyboard` / `piano` → `teclado` / `piano`
+  - `return` / `refund` → `devolução` / `reembolso`
+  - `warranty` → `garantia`
+  - `shipping` → `frete`
+  - `payment` → `pagamento`
+  - `exchange` → `troca`
+  - `hours` → `horário`
+  - `accessories` / `strings` → `acessórios` / `cordas`
+
+Category filters also accept English aliases such as `Acoustic guitars`, `basses`, and `ukuleles`.
+
+### Agent tools
+
+I did not use a free-form SQL agent. The model receives typed tools with strict schemas and `additionalProperties: false`:
+
+| Tool | Purpose |
 |---|---|
-| `search_products` | Busca por texto, categoria, faixa de preço e disponibilidade |
-| `get_product` | Detalhe de produto, specs, promoção, PIX e parcelamento |
-| `get_active_promotions` | Promoções com `is_active = 1`, preço original e desconto |
-| `get_order` | Pedido por ID + verificação do cliente |
-| `search_policy` | Busca híbrida nas seções do manual |
-| `get_store_status` | Horário local, aberto/fechado e próximo atendimento |
-| `get_shipping_estimate` | Regra de frete por cidade e total |
+| `search_products` | Search by text, category, price range, and availability |
+| `get_product` | Product detail, specs, promotion, PIX, and installments |
+| `get_active_promotions` | Promotions with `is_active = 1`, original price, and discount |
+| `get_order` | Order by ID plus customer verification |
+| `search_policy` | Hybrid search over policy sections |
+| `get_store_status` | Local time, open/closed, and next opening |
+| `get_shipping_estimate` | Shipping rule by city and order total |
 
-A verificação de pedido exige `order_id` e um dado do cliente (nome, telefone ou e-mail). Em caso de divergência, a ferramenta retorna um “não encontrado” genérico, sem confirmar se o pedido existe.
+Order verification requires `order_id` and a customer identifier (name, phone, or email). On a mismatch, the tool returns a generic “not found” response without confirming whether the order exists.
 
-### Prompt e guardrails
+### Prompt and guardrails
 
-O system prompt fica em `app/agent/prompts.py` e define persona, escopo, uso obrigatório de ferramentas, privacidade, tom e formato. Além do prompt:
+The system prompt is in `app/agent/prompts.py` and defines persona, scope, mandatory tool use, privacy, tone, and format. It explicitly says: **always answer in English**, regardless of the customer's language or the language of tool results.
 
-- mensagens do usuário são tratadas como dados, não instruções;
-- valores em reais na resposta são comparados com os resultados das ferramentas; se um valor não aparecer em nenhuma consulta, a execução registra um aviso;
-- o número de iterações de ferramentas é limitado por `MAX_TOOL_ITERATIONS`;
-- erros de ferramenta viram resultado estruturado para o modelo se recuperar;
-- o trace guarda argumentos, resultado, latência, tokens e custo estimado.
+Beyond the prompt:
 
-## Tratamento dos dados
+- customer messages are treated as data, not instructions;
+- BRL values in the answer are compared with tool results; if a value does not appear in any lookup, the run records a warning;
+- tool iterations are limited by `MAX_TOOL_ITERATIONS`;
+- tool errors become structured results so the model can recover;
+- the trace stores arguments, result, latency, tokens, and estimated cost.
 
-- **CSV como catálogo disponível.** O manual fala em 300+ instrumentos, mas o CSV tem 65. Para o protótipo, o CSV é a fonte de verdade; nenhum modelo fora dele é inventado. As categorias de sopro madeiras, sopro metais e cordas orquestrais estão vazias.
-- **Status vence estoque.** Produto 136 é `discontinued` com estoque 13; 96 é `active` com estoque 0; 130 é `coming_soon` com estoque 2 e aparece em pedidos. A disponibilidade é derivada de status + estoque, nunca só do estoque.
-- **Promoções ativas.** Só 4 das 25 linhas têm `is_active = 1`. As duplicatas dos produtos 93, 96 e 99 estão inativas. A promoção ativa é escolhida pelo maior desconto se houver mais de uma.
-- **Total do pedido é autoritativo.** Os pedidos 3 e 20 têm total menor que a soma dos itens. O sistema não “corrige” os dados; registra a divergência em `data_quality_issues` e usa `orders.total_brl` nas respostas.
-- **PII.** Telefones e e-mails são mascarados nas listas e nos traces. O painel não tem login e deve rodar em `127.0.0.1`; não exponha publicamente.
-- **Dinheiro e parcelamento.** Valores são convertidos para centavos com `Decimal` e arredondamento `ROUND_HALF_UP`. O PIX de 5% não incide sobre promoção. O manual tem uma inconsistência entre a tabela (parcela mínima de R$ 100) e a seção 3.1 (4–6x com mínima de R$ 80); a implementação segue a seção 3.1 e documenta a escolha.
-- **Datas.** O pedido tem data de compra e entrega estimada, mas não a data real de recebimento. Para devolução, o agente usa a estimativa com cautela ou pergunta ao cliente.
-- **Sem CEP/endereço.** O cliente tem apenas cidade. O frete em Campo Grande segue a regra de R$ 500/R$ 35; fora da região, o agente explica que precisa do CEP para cotar PAC, SEDEX ou Jadlog.
-- **Sem calendário de feriados.** O horário cobre segunda a sábado e domingo; feriados não estão modelados e isso está explícito na resposta da ferramenta.
+## Data treatment
 
-## Estrutura
+- **CSV as the available catalog.** The manual mentions 300+ instruments, but the CSV has 65. For the prototype, the CSV is the source of truth; no model outside it is invented. The woodwind, brass, and orchestral-strings categories are empty.
+- **Status beats stock.** Product 136 is `discontinued` with stock 13; 96 is `active` with stock 0; 130 is `coming_soon` with stock 2 and appears in orders. Availability is derived from status + stock, never from stock alone.
+- **Active promotions.** Only 4 of 25 rows have `is_active = 1`. Duplicate rows for products 93, 96, and 99 are inactive. If more than one promotion is active, the highest discount is used.
+- **Order total is authoritative.** Orders 3 and 20 have totals lower than the line-item sum. The system does not “fix” the data; it records the mismatch in `data_quality_issues` and uses `orders.total_brl` in answers.
+- **PII.** Phone numbers and emails are masked in lists and traces. The panel has no login and should run on `127.0.0.1`; do not expose it publicly.
+- **Money and installments.** Values are converted to cents with `Decimal` and `ROUND_HALF_UP`. The 5% PIX discount does not apply to promotions. The manual has an inconsistency between the table (minimum installment of R$ 100) and section 3.1 (4–6x with a minimum of R$ 80); the implementation follows section 3.1 and documents the choice.
+- **Dates.** Orders have a purchase date and an estimated delivery date, but not the actual delivery date. For returns, the agent uses the estimate cautiously or asks the customer.
+- **No CEP/address.** Customers have only a city. Shipping in Campo Grande follows the R$ 500/R$ 35 rule; outside the region, the agent explains that the CEP is needed to quote PAC, SEDEX, or Jadlog.
+- **No holiday calendar.** Hours cover Monday–Saturday and Sunday; holidays are not modeled, and the tool response says so explicitly.
+
+## Project structure
 
 ```text
 app/
-  main.py                  # criação do FastAPI e lifespan
-  config.py                # .env e Settings
-  db.py                    # schema, conexão, reset
-  cli.py                   # chat/ask/status no terminal
+  main.py                  # FastAPI app and lifespan
+  config.py                # .env and Settings
+  db.py                    # schema, connection, reset
+  cli.py                   # chat/ask/status in the terminal
   agent/
-    orchestrator.py        # loop Responses API, streaming e persistência
+    orchestrator.py        # Responses API loop, streaming, persistence
     prompts.py             # system prompt
-    tools.py               # schemas e dispatch
-    guardrails.py          # validação de valores e tamanho de mensagem
+    tools.py               # schemas and dispatch
+    guardrails.py          # value and message validation
   domain/
-    catalog.py             # busca, disponibilidade, preços
-    orders.py              # pedido, verificação, máscaras de PII
-    payments.py            # PIX e parcelamento
-    policy.py              # busca híbrida
-    shipping.py            # regra de frete
-    store.py               # horário da loja
+    catalog.py             # search, availability, prices
+    orders.py              # orders, verification, PII masks
+    payments.py            # PIX and installments
+    policy.py              # hybrid retrieval
+    search_aliases.py      # English ↔ Portuguese search terms
+    shipping.py            # shipping rules
+    store.py               # store hours
   data/
-    ingest.py              # CSV + políticas -> SQLite
-    quality.py             # anomalias
+    ingest.py              # CSV + policies -> SQLite
+    quality.py             # anomaly checks
   llm/
-    base.py                # protocolos e dataclasses
-    openai_responses.py    # adapter gpt-6-luna
-    embeddings.py          # text-embedding-3-large e fake
-    fake.py                # LLM determinística para testes
+    base.py                # protocols and dataclasses
+    openai_responses.py    # gpt-6-luna adapter
+    embeddings.py          # text-embedding-3-large and fake
+    fake.py                # deterministic LLM for tests
   web/
-    routes.py              # rotas do chat, painel e SSE
+    routes.py              # chat, panel, and SSE routes
     templates/             # Jinja2
-    static/                # CSS, HTMX e chat.js
+    static/                # CSS, HTMX, chat.js
 data/
-  *.csv                    # dados operacionais
-  políticas_da_loja.pdf    # manual
-  policy_sections.json     # seções extraídas e revisadas
-tests/                     # 36 testes
+  *.csv                    # operational data (Portuguese)
+  políticas_da_loja.pdf    # policy manual (Portuguese)
+  policy_sections.json     # extracted, reviewed sections
+tests/                     # 41 tests
 scripts/
-  extract_policy.py        # PDF -> seções
-examples/                  # conversas de exemplo
+  extract_policy.py        # PDF -> sections
+examples/                  # English example conversations
 ```
 
-## Endpoints principais
+## Main endpoints
 
 - `GET /` — chat
-- `POST /chat/stream` — chat com SSE (`token`, `tool_call`, `tool_result`, `done`, `error`)
-- `POST /chat` — fallback sem streaming
-- `GET /sessions/{id}` / `POST /sessions/new` — troca e criação de sessão
-- `GET /health` — estado do banco e do modelo
-- `GET /ops` — painel
-- `GET /ops/catalog` e `/ops/catalog/{id}` — catálogo
-- `GET /ops/orders` e `/ops/orders/{id}` — pedidos
-- `GET /ops/traces` e `/ops/traces/{id}` — execuções e ferramentas
-- `GET /ops/policy` — seções e busca híbrida
-- `GET /ops/quality` — anomalias
+- `POST /chat/stream` — chat with SSE (`token`, `tool_call`, `tool_result`, `done`, `error`)
+- `POST /chat` — non-streaming fallback
+- `GET /sessions/{id}` / `POST /sessions/new` — switch and create sessions
+- `GET /health` — database and model status
+- `GET /ops` — operational dashboard
+- `GET /ops/catalog` and `/ops/catalog/{id}` — catalog
+- `GET /ops/orders` and `/ops/orders/{id}` — orders
+- `GET /ops/traces` and `/ops/traces/{id}` — runs and tools
+- `GET /ops/policy` — sections and hybrid search
+- `GET /ops/quality` — data-quality anomalies
 
-## Exemplos de conversa
+## Example conversations
 
-- `examples/01-catalogo.md` — busca de violões até R$ 1.000
-- `examples/02-preco-estoque.md` — preço, estoque e PIX do Yamaha C40
-- `examples/03-pedido.md` — status do pedido com verificação do cliente
-- `examples/04-devolucao.md` — aplicação da política de arrependimento
-- `examples/05-fora-de-escopo.md` — pedido de acessório e redirecionamento
+- `examples/01-catalog.md` — acoustic guitars under R$ 1,000
+- `examples/02-price-stock.md` — Yamaha C40 price, stock, and PIX
+- `examples/03-order.md` — order status with customer verification
+- `examples/04-return.md` — right of withdrawal policy
+- `examples/05-out-of-scope.md` — accessory request and redirect
 
-## Limitações e próximos passos
+## Limitations and next steps
 
-- Sem autenticação. O painel e o chat são para demo local; em produção seria necessário login, autorização por papel e rate limiting.
-- SQLite é single-writer; para múltiplos atendentes simultâneos, migraria para Postgres.
-- O manual não tem data real de recebimento nem CEP; algumas respostas dependem de o cliente informar esses dados.
-- Promoções não têm data de início/fim; só o flag `is_active`.
-- O catálogo é uma amostra de 65 itens, não os 300+ citados no manual.
-- O estado da conversa é mantido como itens da Responses API no SQLite e cresce com o uso; com mais tempo, adicionaria sumarização e limite de contexto.
-- O trace mostra ferramentas e resultados, não chain-of-thought.
-- Não há avaliação automatizada de qualidade das respostas com LLM-as-judge; os testes cobrem ferramentas, políticas e fluxo.
-- Com mais tempo: Docker, Postgres, integração de CEP, calendário de feriados, edição no painel, reranker, cache de embeddings e métricas de custo/latência.
+- No authentication. The panel and chat are for a local demo; production would need login, role-based authorization, and rate limiting.
+- SQLite is single-writer; for multiple simultaneous agents, I would move to Postgres.
+- The manual has no actual delivery date and no CEP; some answers depend on the customer providing those details.
+- Promotions have no start/end dates; only the `is_active` flag.
+- The catalog is a 65-item sample, not the 300+ mentioned in the manual.
+- Conversation state is kept as Responses API items in SQLite and grows with use; with more time, I would add summarization and a context limit.
+- The trace shows tools and results, not chain-of-thought.
+- There is no automated LLM-as-judge evaluation; the tests cover tools, policies, and flow.
+- With more time: Docker, Postgres, CEP integration, holiday calendar, panel editing, reranking, embedding cache, and cost/latency metrics.
 
-## Uso de assistentes de código
+## AI assistant disclosure
 
-Este projeto foi desenvolvido com apoio do **OpenCode** usando o modelo **`deepseek-v4.1-flash`**. O assistente foi usado para:
+This project was developed with support from **OpenCode** using the **`deepseek-v4.1-flash`** model. The assistant was used to:
 
-- discutir a arquitetura e os trade-offs;
-- gerar o scaffold do projeto e os templates;
-- implementar ingestão, domínio, ferramentas, loop do agente, SSE e painel;
-- escrever e rodar os testes;
-- revisar dados e políticas;
-- redigir esta documentação.
+- discuss architecture and trade-offs;
+- generate the project scaffold and templates;
+- implement ingestion, domain services, tools, the agent loop, SSE, and the panel;
+- write and run tests;
+- review data and policies;
+- write this documentation;
+- convert the project's user-facing text, documentation, and examples to English.
 
-As decisões foram revisadas e validadas com testes locais. Nenhuma chave de API, dado pessoal real ou segredo foi commitado. O uso de IA está declarado aqui conforme pedido no enunciado.
+Decisions were reviewed and validated with local tests. No API keys, real personal data, or secrets were committed. This disclosure is included as requested in the challenge brief.
 
-## Premissas documentadas
+## Documented assumptions
 
-- O CSV é o catálogo disponível para o protótipo, mesmo que o manual cite 300+ instrumentos.
-- A seção 3.1 do manual prevalece sobre a tabela de parcelamento quando há conflito.
-- `orders.total_brl` é a fonte de verdade, mesmo quando diverge da soma dos itens.
-- Para devolução, a data estimada de entrega é usada como referência quando a data real não está disponível; o agente deve confirmar com o cliente.
-- Feriados não estão modelados; domingos e feriados seguem fechados.
+- The CSV is the available catalog for the prototype, even though the manual mentions 300+ instruments.
+- Section 3.1 of the manual prevails over the installment table when they conflict.
+- `orders.total_brl` is the source of truth, even when it differs from the line-item sum.
+- For returns, the estimated delivery date is used as a reference when the actual date is unavailable; the agent should confirm with the customer.
+- Holidays are not modeled; Sundays and holidays are treated as closed.
+- Source product names, descriptions, category names, customer names, and policy text remain in Portuguese; the agent and all user-facing output are in English.

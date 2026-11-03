@@ -1,17 +1,17 @@
-# Exemplo 2 — Preço, estoque e PIX
+# Example 2 — Price, stock, and PIX
 
-**Cliente:** Quanto custa o Yamaha C40? Tem em estoque?
+**Customer:** How much is the Yamaha C40? Do you have it in stock?
 
-**Assistente:** O **Yamaha C40 Nylon Natural** está **R$ 599,90** e temos **12 unidades** em estoque.
+**Assistant:** The **Yamaha C40 Nylon Natural** is **R$ 599.90**, and we have **12 units** in stock.
 
-Ele está ativo, sem promoção vigente. No **PIX**, com 5% de desconto, fica **R$ 569,91**. Também aceitamos débito, boleto e crédito em até 12x sem juros, respeitando a parcela mínima.
+It is active and has no current promotion. With the **5% PIX discount**, it comes to **R$ 569.91**. We also accept debit card, boleto, and credit card, subject to the minimum installment.
 
-Quer que eu te conte mais sobre as especificações ou sobre as formas de pagamento?
+Would you like more details about its specifications or payment options?
 
-**Consulta interna**
+**Internal lookup**
 
 ```text
 get_product(product_id=81)
 ```
 
-O preço e o estoque vieram do banco; o valor do PIX foi calculado pela regra da loja, sem acumular com promoção.
+The price and stock came from the database. The PIX value was calculated by the store rule and does not stack with promotions.
