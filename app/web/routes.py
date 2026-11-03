@@ -121,7 +121,11 @@ def _sse(event: dict) -> str:
 @router.get("/", response_class=HTMLResponse)
 async def chat_page(request: Request, session_id: str | None = None):
     sid = _ensure_session(request, session_id)
-    response = templates.TemplateResponse("chat.html", _chat_context(request, sid))
+    response = templates.TemplateResponse(
+        request=request,
+        name="chat.html",
+        context=_chat_context(request, sid),
+    )
     return _set_session_cookie(response, sid)
 
 
@@ -169,8 +173,9 @@ async def chat_once(
     sid = _ensure_session(request, session_id)
     result = await _agent(request).run(sid, message)
     return templates.TemplateResponse(
-        "partials/chat_exchange.html",
-        {
+        request=request,
+        name="partials/chat_exchange.html",
+        context={
             "request": request,
             "message": message,
             "answer": result.text,
@@ -234,8 +239,9 @@ async def ops_dashboard(request: Request):
         )
     ]
     return templates.TemplateResponse(
-        "ops_dashboard.html",
-        _ops_context(
+        request=request,
+        name="ops_dashboard.html",
+        context=_ops_context(
             request,
             "dashboard",
             counts=counts,
@@ -263,8 +269,9 @@ async def ops_catalog(
     if status:
         products = [product for product in products if product["status"] == status]
     return templates.TemplateResponse(
-        "ops_catalog.html",
-        _ops_context(
+        request=request,
+        name="ops_catalog.html",
+        context=_ops_context(
             request,
             "catalog",
             products=products,
@@ -281,8 +288,9 @@ async def ops_catalog(
 async def ops_product(request: Request, product_id: int):
     product = CatalogService(_conn(request)).get_product(product_id)
     return templates.TemplateResponse(
-        "ops_product.html",
-        _ops_context(request, "catalog", product=product),
+        request=request,
+        name="ops_product.html",
+        context=_ops_context(request, "catalog", product=product),
         status_code=200 if product else 404,
     )
 
@@ -291,8 +299,9 @@ async def ops_product(request: Request, product_id: int):
 async def ops_orders(request: Request, status: str = "", q: str = ""):
     orders = OrderService(_conn(request)).list_orders(status=status or None, search=q or None)
     return templates.TemplateResponse(
-        "ops_orders.html",
-        _ops_context(request, "orders", orders=orders, status=status, q=q),
+        request=request,
+        name="ops_orders.html",
+        context=_ops_context(request, "orders", orders=orders, status=status, q=q),
     )
 
 
@@ -300,8 +309,9 @@ async def ops_orders(request: Request, status: str = "", q: str = ""):
 async def ops_order(request: Request, order_id: int):
     order = OrderService(_conn(request)).get_order_for_ops(order_id)
     return templates.TemplateResponse(
-        "ops_order.html",
-        _ops_context(request, "orders", order=order),
+        request=request,
+        name="ops_order.html",
+        context=_ops_context(request, "orders", order=order),
         status_code=200 if order else 404,
     )
 
@@ -322,8 +332,9 @@ async def ops_traces(request: Request):
         )
     ]
     return templates.TemplateResponse(
-        "ops_traces.html",
-        _ops_context(request, "traces", runs=runs),
+        request=request,
+        name="ops_traces.html",
+        context=_ops_context(request, "traces", runs=runs),
     )
 
 
@@ -355,8 +366,9 @@ async def ops_trace(request: Request, run_id: int):
             )
         ]
     return templates.TemplateResponse(
-        "ops_trace.html",
-        _ops_context(
+        request=request,
+        name="ops_trace.html",
+        context=_ops_context(
             request,
             "traces",
             run=dict(run) if run else None,
@@ -372,8 +384,9 @@ async def ops_policy(request: Request, q: str = ""):
     policy = request.app.state.toolbox.policy
     results = await policy.search(q, 5) if q.strip() else []
     return templates.TemplateResponse(
-        "ops_policy.html",
-        _ops_context(
+        request=request,
+        name="ops_policy.html",
+        context=_ops_context(
             request,
             "policy",
             sections=policy.list_sections(),
@@ -392,6 +405,7 @@ async def ops_quality(request: Request):
         )
     ]
     return templates.TemplateResponse(
-        "ops_quality.html",
-        _ops_context(request, "quality", issues=issues),
+        request=request,
+        name="ops_quality.html",
+        context=_ops_context(request, "quality", issues=issues),
     )

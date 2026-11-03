@@ -15,6 +15,7 @@ The agent checks the catalog and orders in SQLite, retrieves rules from the poli
 - OpenAI **`text-embedding-3-large`** for semantic policy retrieval
 - `numpy` for cosine similarity
 - `pdfplumber` only for offline policy extraction
+- `tzdata` for the `America/Campo_Grande` timezone on Windows
 
 ## How to run
 
