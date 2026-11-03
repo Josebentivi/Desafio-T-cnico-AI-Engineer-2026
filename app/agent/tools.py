@@ -209,7 +209,7 @@ class Toolbox:
         if name == "get_product":
             product = self.catalog.get_product(int(arguments["product_id"]))
             if product is None:
-                return {"found": False, "message": "Product not found in the catalog."}
+                return {"found": False, "message": "Instrumento não encontrado no catálogo."}
             return {"found": True, "product": product}
         if name == "get_active_promotions":
             product_id = arguments.get("product_id")
@@ -233,7 +233,7 @@ class Toolbox:
             return shipping_estimate(
                 str(arguments["city"]), parse_brl_to_cents(arguments["total_brl"])
             )
-        return {"error": f"Unknown tool: {name}"}
+        return {"error": f"Ferramenta desconhecida: {name}"}
 
 
 def parse_arguments(raw: str) -> dict:

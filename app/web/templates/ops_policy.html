@@ -1,59 +1,61 @@
 {% extends "base.html" %}
-{% block title %}Policies · Empório da Música{% endblock %}
+{% block title %}Políticas da loja · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Policies</h1>
-      <p>{{ sections|length }} sections extracted from manual v2.1. Manual text remains in Portuguese; the agent answers in English.</p>
+      <span class="eyebrow">Informação para atender melhor</span>
+      <h1>Políticas da loja</h1>
+      <p>{{ sections|length }} seções do manual v2.1, usadas como referência pelo assistente.</p>
     </div>
-    <a class="btn secondary" href="/ops">Back to dashboard</a>
+    <a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a>
   </div>
 
-  <form class="filters"
+  <form class="filters" method="get" action="/ops/policy"
         hx-get="/ops/policy"
         hx-target="#ops-content"
-        hx-select="#ops-content"
+         hx-select="#ops-content"
+         hx-swap="outerHTML"
         hx-push-url="true"
         hx-trigger="submit">
-    <div class="field" style="flex: 1; min-width: 260px;">
-      <label for="q">Hybrid search (embeddings + FTS5)</label>
-      <input id="q" name="q" value="{{ q }}" placeholder="e.g. return, PIX, warranty, shipping">
+    <div class="field">
+      <label for="q">Busca nas políticas (semântica + textual)</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="Ex.: devolução, PIX, garantia, frete">
     </div>
-    <button class="btn" type="submit">Search</button>
+    <button class="btn" type="submit">{{ icon('search') }}Buscar</button>
   </form>
 
   <div id="ops-content">
     {% if q %}
       <div class="panel">
-        <div class="panel-head"><h2>Results for “{{ q }}”</h2></div>
+        <div class="panel-head"><h2>Resultados para “{{ q }}”</h2></div>
         <div class="panel-body stack">
           {% for result in results %}
-            <div class="card" style="box-shadow: none;">
+            <div class="card">
               <div class="spread">
                 <strong>{{ result.title }}</strong>
-                <span class="small muted">page {{ result.page }} · score {{ "%.4f"|format(result.score) }} · {{ result.sources|join(" + ") }}</span>
+                <span class="result-meta">Página {{ result.page }} · relevância {{ "%.4f"|format(result.score) }} · {{ result.sources|join(" + ") }}</span>
               </div>
-              <p class="small" style="white-space: pre-wrap;">{{ result.text }}</p>
+              <p class="small policy-text">{{ result.text }}</p>
             </div>
           {% else %}
-            <p class="muted">No sections found.</p>
+            <p class="muted">Nenhuma seção encontrada. Tente buscar por outro termo.</p>
           {% endfor %}
         </div>
       </div>
     {% endif %}
 
     <div class="panel">
-      <div class="panel-head"><h2>Manual sections</h2></div>
-      <div class="table-wrap">
+      <div class="panel-head"><h2>Seções do manual</h2></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Seções do manual">
         <table>
-          <thead><tr><th>Section</th><th>Title</th><th class="num">Page</th><th>Embedding</th></tr></thead>
+          <thead><tr><th>Seção</th><th>Título</th><th class="num">Página</th><th>Índice semântico</th></tr></thead>
           <tbody>
             {% for section in sections %}
               <tr>
                 <td class="mono">{{ section.section_id }}</td>
                 <td>{{ section.title }}</td>
                 <td class="num">{{ section.page }}</td>
-                <td>{% if section.has_embedding %}<span class="badge green">ok</span>{% else %}<span class="badge gray">FTS5</span>{% endif %}</td>
+                <td>{% if section.has_embedding %}<span class="badge green">Disponível</span>{% else %}<span class="badge gray">Busca textual</span>{% endif %}</td>
               </tr>
             {% endfor %}
           </tbody>

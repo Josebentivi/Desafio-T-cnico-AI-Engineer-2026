@@ -15,6 +15,7 @@ from app.db import connect, init_db
 from app.llm.embeddings import OpenAIEmbeddingClient
 from app.llm.openai_responses import OpenAIResponsesClient
 from app.llm.unavailable import UnavailableLLM
+from app.web.assets import RevalidateBrowserCache
 from app.web.routes import router
 
 STATIC_DIR = Path(__file__).resolve().parent / "web" / "static"
@@ -68,6 +69,8 @@ def create_app(
             db_conn.close()
 
     app = FastAPI(title="Empório da Música", lifespan=lifespan)
+    app.state.static_dir = STATIC_DIR
+    app.add_middleware(RevalidateBrowserCache)
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     app.include_router(router)
     return app

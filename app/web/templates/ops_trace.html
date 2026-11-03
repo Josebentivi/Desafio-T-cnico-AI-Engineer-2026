@@ -1,33 +1,34 @@
 {% extends "base.html" %}
-{% block title %}Trace · Empório da Música{% endblock %}
+{% block title %}Detalhes do atendimento · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Trace {% if run %}#{{ run.run_id }}{% endif %}</h1>
-      <p>Execution details and tools consulted.</p>
+      <span class="eyebrow">Por trás da resposta</span>
+      <h1>Atendimento {% if run %}#{{ run.run_id }}{% endif %}</h1>
+      <p>Detalhes da execução e fontes consultadas pelo assistente.</p>
     </div>
-    <a class="btn secondary" href="/ops/traces">Back to traces</a>
+    <a class="btn secondary" href="/ops/traces">{{ icon('back') }}Voltar à atividade</a>
   </div>
 
   {% if not run %}
-    <div class="panel"><div class="panel-body">Run not found.</div></div>
+    <div class="panel"><div class="panel-body">Atendimento não encontrado.</div></div>
   {% else %}
     <div class="detail-grid">
       <div class="panel">
         <div class="panel-head">
           <h2>{{ run.title }}</h2>
-          {% if run.error %}<span class="badge red">error</span>{% else %}<span class="badge green">ok</span>{% endif %}
+          {% if run.error %}<span class="badge red">Erro</span>{% else %}<span class="badge green">Concluído</span>{% endif %}
         </div>
         <div class="panel-body">
           <dl class="kv">
-            <dt>Run</dt><dd>#{{ run.run_id }}</dd>
-            <dt>Response ID</dt><dd class="mono">{{ run.response_id or "—" }}</dd>
-            <dt>Model</dt><dd>{{ run.model }}</dd>
-            <dt>Reasoning</dt><dd>{{ run.reasoning_effort }}</dd>
-            <dt>Tokens</dt><dd>{{ run.input_tokens }} input · {{ run.output_tokens }} output</dd>
-            <dt>Latency</dt><dd>{{ run.latency_ms }} ms</dd>
-            <dt>Estimated cost</dt><dd>US$ {{ "%.5f"|format(run.estimated_cost_usd) }}</dd>
-            <dt>When</dt><dd>{{ run.created_at[:19].replace("T", " ") }}</dd>
+            <dt>Execução</dt><dd>#{{ run.run_id }}</dd>
+            <dt>ID da resposta</dt><dd class="mono">{{ run.response_id or "—" }}</dd>
+            <dt>Modelo</dt><dd>{{ run.model }}</dd>
+            <dt>Esforço de raciocínio</dt><dd>{{ run.reasoning_effort|ui_label }}</dd>
+            <dt>Tokens</dt><dd>{{ run.input_tokens }} entrada · {{ run.output_tokens }} saída</dd>
+            <dt>Tempo de resposta</dt><dd>{{ run.latency_ms }} ms</dd>
+            <dt>Custo estimado</dt><dd>US$ {{ "%.5f"|format(run.estimated_cost_usd) }}</dd>
+            <dt>Data e hora</dt><dd>{{ run.created_at|datetime_br }}</dd>
           </dl>
           {% if run.error %}<div class="error small" style="margin-top: 14px;">{{ run.error }}</div>{% endif %}
           {% if run.warnings_json and run.warnings_json != "[]" %}
@@ -37,43 +38,44 @@
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>Conversation messages</h2></div>
+        <div class="panel-head"><h2>Mensagens da conversa</h2></div>
         <div class="panel-body stack">
           {% for message in messages %}
             <div>
-              <div class="small muted">{{ message.role }} · {{ message.created_at[:19].replace("T", " ") }}</div>
+              <div class="small muted">{{ message.role|ui_label }} · {{ message.created_at|datetime_br }}</div>
               <div>{{ message.content }}</div>
             </div>
           {% else %}
-            <p class="muted">No messages.</p>
+            <p class="muted">Nenhuma mensagem registrada.</p>
           {% endfor %}
         </div>
       </div>
     </div>
 
-    <div class="panel" style="margin-top: 18px;">
-      <div class="panel-head"><h2>Tools called</h2></div>
+    <div class="panel section-gap">
+      <div class="panel-head"><h2>Consultas realizadas</h2></div>
       <div class="panel-body stack">
         {% for call in tool_calls %}
-          <details class="card" style="box-shadow: none;">
+          <details class="card">
             <summary>
-              <strong>{{ call.name }}</strong>
-              <span class="muted small">· {{ call.latency_ms }} ms{% if call.error %} · error{% endif %}</span>
+              <strong>{{ call.name|ui_label }}</strong>
+              <span class="muted small">· {{ call.latency_ms }} ms{% if call.error %} · erro{% endif %}</span>
             </summary>
-            <div class="stack" style="margin-top: 10px;">
+            <div class="stack section-gap">
+              <div class="small muted">Identificador técnico: <code>{{ call.name }}</code></div>
               <div>
-                <div class="small muted">Arguments</div>
+                <div class="small muted">Parâmetros (dados técnicos)</div>
                 <pre class="json">{{ call.arguments_json }}</pre>
               </div>
               <div>
-                <div class="small muted">Result</div>
+                <div class="small muted">Resultado (dados técnicos)</div>
                 <pre class="json">{{ call.output_json }}</pre>
               </div>
               {% if call.error %}<div class="error small">{{ call.error }}</div>{% endif %}
             </div>
           </details>
         {% else %}
-          <p class="muted">No tools called.</p>
+          <p class="muted">Nenhuma consulta realizada neste atendimento.</p>
         {% endfor %}
       </div>
     </div>

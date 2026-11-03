@@ -1,11 +1,6 @@
-<div class="msg user">
-  <div class="bubble">{{ message }}</div>
-</div>
-<div class="msg assistant">
-  <div class="bubble">{{ answer|render_message }}</div>
-</div>
+{% from 'macros.html' import message as chat_message with context %}
+{{ chat_message('user', message) }}
+{{ chat_message('assistant', answer) }}
 {% if warnings %}
-  <div class="warning small">
-    {% for warning in warnings %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}
-  </div>
+  <div class="warning small" role="status">{% for warning in warnings %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>
 {% endif %}

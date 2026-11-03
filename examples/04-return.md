@@ -1,5 +1,7 @@
 # Example 4 — Right of withdrawal
 
+> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+
 **Customer:** I changed my mind about an online purchase. Can I return it?
 
 **Assistant:** Yes, as long as you request the return within **7 calendar days of receiving the product**. The instrument must be in its original packaging, with no signs of use, and include all accessories and manuals.

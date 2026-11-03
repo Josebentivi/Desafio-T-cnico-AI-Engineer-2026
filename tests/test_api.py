@@ -7,7 +7,7 @@ from app.main import create_app
 
 
 def make_client(conn, settings, turns=None):
-    app = create_app(settings, conn=conn, llm=FakeLLM(turns or [FakeTurn(text="Hello!")]))
+    app = create_app(settings, conn=conn, llm=FakeLLM(turns or [FakeTurn(text="Olá!")]))
     return TestClient(app)
 
 
@@ -26,36 +26,40 @@ def test_chat_page_sets_session_cookie(conn, settings):
     with make_client(conn, settings) as client:
         response = client.get("/")
         assert response.status_code == 200
-        assert "Empório da Música Support" in response.text
+        assert "Vamos falar de música?" in response.text
+        assert '<html lang="pt-BR">' in response.text
+        assert 'for="chat-input">Sua mensagem</label>' in response.text
         assert response.cookies.get("session_id")
 
 
 def test_chat_stream(conn, settings):
-    with make_client(conn, settings, [FakeTurn(text="Yes, we have acoustic guitars!")]) as client:
+    with make_client(conn, settings, [FakeTurn(text="Sim, temos violões!")]) as client:
         page = client.get("/")
         session_id = page.cookies.get("session_id")
         response = client.post(
             "/chat/stream",
-            data={"message": "Do you have acoustic guitars?", "session_id": session_id},
+            data={"message": "Vocês têm violões?", "session_id": session_id},
         )
         assert response.status_code == 200
         assert "event: token" in response.text
+        assert response.headers["cache-control"] == "no-cache"
+        assert response.headers["content-type"].startswith("text/event-stream")
         assert "event: done" in response.text
-        assert "Yes, we have acoustic guitars!" in response.text
+        assert "Sim, temos violões!" in response.text
         assert conn.execute("SELECT COUNT(*) AS n FROM messages").fetchone()["n"] == 2
         assert conn.execute("SELECT COUNT(*) AS n FROM agent_runs").fetchone()["n"] == 1
 
 
 def test_chat_non_streaming(conn, settings):
-    with make_client(conn, settings, [FakeTurn(text="This is a test response.")]) as client:
+    with make_client(conn, settings, [FakeTurn(text="Esta é uma resposta de teste.")]) as client:
         page = client.get("/")
         session_id = page.cookies.get("session_id")
         response = client.post(
             "/chat",
-            data={"message": "Hi", "session_id": session_id},
+            data={"message": "Oi", "session_id": session_id},
         )
         assert response.status_code == 200
-        assert "This is a test response." in response.text
+        assert "Esta é uma resposta de teste." in response.text
 
 
 def test_new_session(conn, settings):
@@ -79,23 +83,24 @@ def test_ops_pages(conn, settings):
             assert response.status_code == 200, path
 
 
-def test_ops_ui_is_english(conn, settings):
+def test_ops_ui_is_portuguese(conn, settings):
     with make_client(conn, settings) as client:
         dashboard = client.get("/ops")
-        assert "Operational dashboard" in dashboard.text
-        assert "Recent runs" in dashboard.text
+        assert "Visão geral" in dashboard.text
+        assert "Atendimentos recentes" in dashboard.text
 
         catalog = client.get("/ops/catalog")
-        assert "Availability" in catalog.text
-        assert "Promotion" in catalog.text
-        assert "Acoustic guitars" in catalog.text
+        assert "Disponibilidade" in catalog.text
+        assert "Promoção" in catalog.text
+        assert "Violões" in catalog.text
 
         orders = client.get("/ops/orders")
-        assert "Tracking" in orders.text
-        assert "No orders found." not in orders.text
+        assert "Rastreio" in orders.text
+        assert "Nenhum pedido encontrado." not in orders.text
+        assert "Entregue" in orders.text
 
         policy = client.get("/ops/policy")
-        assert "Manual sections" in policy.text
+        assert "Seções do manual" in policy.text
 
 
 def test_ops_detail_pages(conn, settings):
@@ -103,11 +108,13 @@ def test_ops_detail_pages(conn, settings):
         product = client.get("/ops/catalog/81")
         assert product.status_code == 200
         assert "Yamaha C40" in product.text
-        assert "Payment methods" in product.text
+        assert "Formas de pagamento" in product.text
+        assert "Tampo" in product.text
+        assert "Não" in product.text
 
         missing_product = client.get("/ops/catalog/9999")
         assert missing_product.status_code == 404
-        assert "Product not found." in missing_product.text
+        assert "Instrumento não encontrado." in missing_product.text
 
         order = client.get("/ops/orders/3")
         assert order.status_code == 200
@@ -116,7 +123,7 @@ def test_ops_detail_pages(conn, settings):
 
         missing_order = client.get("/ops/orders/9999")
         assert missing_order.status_code == 404
-        assert "Order not found." in missing_order.text
+        assert "Pedido não encontrado." in missing_order.text
 
 
 def test_ops_policy_search(conn, settings):
@@ -133,3 +140,56 @@ def test_ops_catalog_filter(conn, settings):
         )
         assert response.status_code == 200
         assert "Yamaha C40" in response.text
+
+
+def test_catalog_htmx_response_contains_updated_count_and_filters(conn, settings):
+    with make_client(conn, settings) as client:
+        response = client.get(
+            "/ops/catalog", params={"q": "violão", "status": "discontinued"},
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        partial = response.text.split('<div id="ops-content">', 1)[1]
+        assert "1 instrumento encontrado" in partial
+        assert 'value="discontinued" selected' in partial
+        assert "Shelby SN-7C" in partial
+        assert "Yamaha C40" not in partial
+
+
+def test_chat_history_renders_after_stream_and_switches_sessions(conn, settings):
+    with make_client(conn, settings, [FakeTurn(text="Olá! Como posso ajudar?")]) as client:
+        first = client.get("/").cookies["session_id"]
+        client.post("/chat", data={"message": "Preciso de um violão", "session_id": first})
+        page = client.get("/")
+        assert "Preciso de um violão" in page.text
+        assert "Olá! Como posso ajudar?" in page.text
+        assert "Você" in page.text
+        assert " às " in page.text
+        second = client.post("/sessions/new", follow_redirects=False).cookies["session_id"]
+        assert first != second
+        assert "Nova conversa" in client.get("/").text
+        client.get(f"/sessions/{first}")
+        assert "Olá! Como posso ajudar?" in client.get("/").text
+
+
+def test_legacy_quality_messages_display_in_portuguese(conn, settings):
+    conn.execute(
+        "UPDATE data_quality_issues SET message = ? WHERE code = 'empty_category'",
+        ("Category 'Brass' has no products in the CSV.",),
+    )
+    conn.commit()
+    with make_client(conn, settings) as client:
+        page = client.get("/ops/quality")
+        assert "Instrumentos de Sopro (Metais)" in page.text
+        assert "não possui produtos no CSV" in page.text
+        assert "has no products" not in page.text
+
+
+def test_message_rendering_escapes_html_and_keeps_supported_emphasis(conn, settings):
+    with make_client(conn, settings, [FakeTurn(text='**Olá** <script>alert("teste")</script>')]) as client:
+        sid = client.get("/").cookies["session_id"]
+        response = client.post("/chat", data={"message": "<img src=x>", "session_id": sid})
+        assert "<strong>Olá</strong>" in response.text
+        assert "&lt;script&gt;" in response.text
+        assert "<script>" not in response.text
+        assert "&lt;img src=x&gt;" in response.text

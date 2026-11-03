@@ -1,85 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Catalog · Empório da Música{% endblock %}
+{% block title %}Catálogo · Empório da Música{% endblock %}
 {% block content %}
-  <div class="page-head">
-    <div>
-      <h1>Catalog</h1>
-      <p>{{ products|length }} product(s) found.</p>
-    </div>
-    <a class="btn secondary" href="/ops">Back to dashboard</a>
-  </div>
-
-  <form class="filters"
-        hx-get="/ops/catalog"
-        hx-target="#ops-content"
-        hx-select="#ops-content"
-        hx-push-url="true"
-        hx-trigger="submit, change">
-    <div class="field">
-      <label for="q">Search</label>
-      <input id="q" name="q" value="{{ q }}" placeholder="name, description, spec">
-    </div>
-    <div class="field">
-      <label for="category">Category</label>
-      <select id="category" name="category">
-        <option value="">All</option>
-        {% for cat in categories %}
-          <option value="{{ cat.category_id }}" {{ 'selected' if cat.category_id|string == category else '' }}>{{ cat.name_en }} ({{ cat.product_count }})</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="field">
-      <label for="status">Status</label>
-      <select id="status" name="status">
-        <option value="">All</option>
-        <option value="active" {{ 'selected' if status == 'active' else '' }}>Active</option>
-        <option value="discontinued" {{ 'selected' if status == 'discontinued' else '' }}>Discontinued</option>
-        <option value="coming_soon" {{ 'selected' if status == 'coming_soon' else '' }}>Coming soon</option>
-      </select>
-    </div>
-    <label class="row small" style="padding-bottom: 9px;">
-      <input type="checkbox" name="only_available" value="true" {{ 'checked' if only_available else '' }}>
-      available only
-    </label>
-    <button class="btn" type="submit">Filter</button>
+<div id="ops-content">
+  <div class="page-head"><div><span class="eyebrow">Encontre o próximo som</span><h1>Catálogo de instrumentos</h1><p role="status">{{ products|length }} {{ 'instrumento encontrado' if products|length == 1 else 'instrumentos encontrados' }}.</p></div><a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a></div>
+  <form class="filters" method="get" action="/ops/catalog" hx-get="/ops/catalog" hx-target="#ops-content" hx-select="#ops-content" hx-swap="outerHTML" hx-push-url="true" hx-trigger="submit, change">
+    <div class="field"><label for="q">Buscar instrumento</label><input id="q" name="q" value="{{ q }}" placeholder="Nome, descrição ou característica"></div>
+    <div class="field"><label for="category">Categoria</label><select id="category" name="category"><option value="">Todas as categorias</option>{% for cat in categories %}<option value="{{ cat.category_id }}" {{ 'selected' if cat.category_id|string == category else '' }}>{{ cat.name }} ({{ cat.product_count }})</option>{% endfor %}</select></div>
+    <div class="field"><label for="status">Situação</label><select id="status" name="status"><option value="">Todas as situações</option>{% for value in ['active', 'discontinued', 'coming_soon'] %}<option value="{{ value }}" {{ 'selected' if status == value else '' }}>{{ value|ui_label }}</option>{% endfor %}</select></div>
+    <label class="checkbox-field"><input type="checkbox" name="only_available" value="true" {{ 'checked' if only_available else '' }}>Somente disponíveis</label>
+    <button class="btn" type="submit">{{ icon('search') }}Filtrar</button>
   </form>
-
-  <div id="ops-content" class="panel">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>ID</th><th>Product</th><th>Category</th><th class="num">Price</th><th>Status</th><th>Availability</th><th class="num">Stock</th><th>Promotion</th></tr>
-        </thead>
-        <tbody>
-          {% for product in products %}
-            <tr>
-              <td>{{ product.product_id }}</td>
-              <td><a href="/ops/catalog/{{ product.product_id }}">{{ product.name }}</a></td>
-              <td class="small">{{ product.category_en }}</td>
-              <td class="num">{{ product.price_brl }}</td>
-              <td>
-                {% if product.status == "active" %}<span class="badge green">active</span>
-                {% elif product.status == "discontinued" %}<span class="badge red">discontinued</span>
-                {% else %}<span class="badge blue">coming soon</span>{% endif %}
-              </td>
-              <td class="small">
-                {% if product.availability == "available" %}<span class="badge green">available</span>
-                {% elif product.availability == "out_of_stock" %}<span class="badge amber">out of stock</span>
-                {% elif product.availability == "discontinued" %}<span class="badge red">discontinued</span>
-                {% else %}<span class="badge blue">coming soon</span>{% endif %}
-              </td>
-              <td class="num">{{ product.stock_quantity }}</td>
-              <td class="small">
-                {% if product.promotion %}
-                  {{ product.promotion.discount_percent }}% · {{ product.promotion.price_brl }}
-                {% else %}<span class="muted">—</span>{% endif %}
-              </td>
-            </tr>
-          {% else %}
-            <tr><td colspan="8" class="muted">No products found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <section class="panel"><div class="table-wrap" tabindex="0" role="region" aria-label="Instrumentos do catálogo">
+    <table><thead><tr><th>ID</th><th>Instrumento</th><th>Categoria</th><th class="num">Preço</th><th>Situação</th><th>Disponibilidade</th><th class="num">Estoque</th><th>Promoção</th></tr></thead><tbody>
+      {% for product in products %}<tr>
+        <td class="muted">{{ product.product_id }}</td><td><a href="/ops/catalog/{{ product.product_id }}">{{ product.name }}</a></td><td class="small">{{ product.category }}</td><td class="num">{{ product.price_brl }}</td>
+        <td><span class="badge {{ 'green' if product.status == 'active' else 'red' if product.status == 'discontinued' else 'blue' }}">{{ product.status|ui_label }}</span></td>
+        <td><span class="badge {{ 'green' if product.availability == 'available' else 'amber' if product.availability == 'out_of_stock' else 'red' if product.availability == 'discontinued' else 'blue' }}">{{ product.availability|ui_label }}</span></td>
+        <td class="num">{{ product.stock_quantity }}</td><td class="small">{% if product.promotion %}<span class="badge amber">−{{ product.promotion.discount_percent }}%</span><div>{{ product.promotion.price_brl }}</div>{% else %}<span class="muted">—</span>{% endif %}</td>
+      </tr>{% else %}<tr><td colspan="8" class="muted empty-cell">Nenhum instrumento encontrado. Tente ajustar os filtros.</td></tr>{% endfor %}
+    </tbody></table>
+  </div></section>
+</div>
 {% endblock %}

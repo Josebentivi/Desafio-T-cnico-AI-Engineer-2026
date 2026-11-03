@@ -1,5 +1,7 @@
 # Example 2 — Price, stock, and PIX
 
+> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+
 **Customer:** How much is the Yamaha C40? Do you have it in stock?
 
 **Assistant:** The **Yamaha C40 Nylon Natural** is **R$ 599,90**, and we have **12 units** in stock.

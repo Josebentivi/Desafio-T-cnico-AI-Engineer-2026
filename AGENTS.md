@@ -73,7 +73,7 @@ Source: `data/políticas_da_loja.pdf` (v2.1, June 2025), extracted to `data/poli
 - `orders` has no actual delivery date; use `estimated_delivery` cautiously or ask the customer.
 
 ## Conventions
-- All user-facing output must be in English: agent replies, UI copy, CLI messages, README, and example conversations. The source CSVs and policy manual remain Portuguese; translate the meaning around product names, customer names, and policy section numbers. Do not switch the agent back to Portuguese.
+- The application uses Brazilian Portuguese (pt-BR): agent replies, UI copy, CLI messages, validation, and runtime errors. README and explanatory documentation, including the documented example conversations, remain in English. English examples are reviewer-facing translations of the Portuguese runtime. Keep product names, customer names, technical identifiers, and policy section numbers as they appear in the source data. The source CSVs and policy manual remain Portuguese.
 - The brief allows ignoring tables you do not need; use the minimum data required and justify it.
 - Keep policy retrieval and domain rules testable without network access.
 - When adding endpoints or tools, update `README.md` and the tests.

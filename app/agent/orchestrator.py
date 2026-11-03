@@ -60,7 +60,7 @@ class Agent:
             INSERT OR IGNORE INTO sessions (session_id, title, state_json, created_at, updated_at)
             VALUES (?, ?, '[]', ?, ?)
             """,
-            (session_id, "New conversation", now, now),
+            (session_id, "Nova conversa", now, now),
         )
         self.conn.execute(
             "UPDATE sessions SET updated_at = ? WHERE session_id = ?",
@@ -69,7 +69,7 @@ class Agent:
         row = self.conn.execute(
             "SELECT title FROM sessions WHERE session_id = ?", (session_id,)
         ).fetchone()
-        if row and row["title"] == "New conversation":
+        if row and row["title"] in {"New conversation", "Nova conversa"}:
             title = " ".join(user_message.split())[:60]
             self.conn.execute(
                 "UPDATE sessions SET title = ? WHERE session_id = ?", (title, session_id)
@@ -145,7 +145,7 @@ class Agent:
                     elif event.type == "completed" and event.response is not None:
                         completed = event.response
                 if completed is None:
-                    raise LLMError("The model did not return a complete response.")
+                    raise LLMError("O modelo não retornou uma resposta completa.")
 
                 input_tokens += completed.input_tokens
                 output_tokens += completed.output_tokens
@@ -215,14 +215,14 @@ class Agent:
                     }
             else:
                 final_text = (
-                    "Sorry, I could not complete the lookup right now. "
-                    "Please try again or talk to the store team."
+                    "Desculpe, não consegui concluir a consulta agora. "
+                    "Tente novamente ou fale com a equipe da loja."
                 )
 
             if not final_text:
                 final_text = (
-                    "Sorry, I could not complete the lookup right now. "
-                    "Please try again or talk to the store team."
+                    "Desculpe, não consegui concluir a consulta agora. "
+                    "Tente novamente ou fale com a equipe da loja."
                 )
 
             warnings = grounding_warnings(
@@ -231,15 +231,15 @@ class Agent:
         except LLMError as exc:
             error_message = str(exc)
             final_text = (
-                "Sorry, I had a problem checking the system right now. "
-                "Please try again in a moment."
+                "Desculpe, tive um problema ao consultar o sistema agora. "
+                "Tente novamente em instantes."
             )
             yield {"type": "error", "message": final_text}
         except Exception as exc:
             error_message = str(exc)
             final_text = (
-                "Sorry, I hit an unexpected problem. "
-                "Please try again or talk to the store team."
+                "Desculpe, ocorreu um problema inesperado. "
+                "Tente novamente ou fale com a equipe da loja."
             )
             yield {"type": "error", "message": final_text}
 

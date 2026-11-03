@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import argparse
 import asyncio
 import sys
 import uuid
@@ -8,6 +7,7 @@ from dataclasses import replace
 
 from app.agent.orchestrator import Agent
 from app.agent.tools import Toolbox
+from app.cli_parser import PortugueseArgumentParser
 from app.config import get_settings
 from app.data.ingest import ingest_all
 from app.db import connect, init_db
@@ -41,7 +41,7 @@ async def _ask(agent: Agent, session_id: str, message: str) -> None:
         if event["type"] == "token":
             print(event["text"], end="", flush=True)
         elif event["type"] == "tool_call":
-            print(f"\n[lookup: {event['name']}]", file=sys.stderr)
+            print(f"\n[consulta: {event['name']}]", file=sys.stderr)
         elif event["type"] == "done":
             print()
         elif event["type"] == "error":
@@ -49,10 +49,10 @@ async def _ask(agent: Agent, session_id: str, message: str) -> None:
 
 
 async def _chat(agent: Agent, session_id: str) -> None:
-    print("Empório da Música support. Type 'exit' to quit.")
+    print("Atendimento do Empório da Música. Digite 'sair' para encerrar.")
     while True:
         try:
-            message = input("\nYou: ").strip()
+            message = input("\nVocê: ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
             break
@@ -60,7 +60,7 @@ async def _chat(agent: Agent, session_id: str) -> None:
             break
         if not message:
             continue
-        print("Assistant: ", end="", flush=True)
+        print("Assistente: ", end="", flush=True)
         await _ask(agent, session_id, message)
 
 
@@ -72,27 +72,30 @@ async def _main(args) -> int:
         elif args.command == "chat":
             await _chat(agent, args.session or uuid.uuid4().hex)
         elif args.command == "status":
-            print(f"Database: {settings.database_file}")
-            print(f"Model: {settings.chat_model}")
-            print(f"OpenAI configured: {settings.has_openai_key}")
-            for table in ["products", "orders", "customers", "policy_sections", "agent_runs"]:
+            print(f"Banco de dados: {settings.database_file}")
+            print(f"Modelo: {settings.chat_model}")
+            print(f"OpenAI configurada: {'Sim' if settings.has_openai_key else 'Não'}")
+            for table, label in {
+                "products": "Instrumentos", "orders": "Pedidos", "customers": "Clientes",
+                "policy_sections": "Seções do manual", "agent_runs": "Atendimentos",
+            }.items():
                 count = conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()["n"]
-                print(f"{table}: {count}")
+                print(f"{label}: {count}")
     finally:
         conn.close()
     return 0
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Empório da Música agent CLI.")
-    parser.add_argument("--db", default=None, help="Alternative SQLite database path.")
-    parser.add_argument("--session", default=None, help="Session ID to continue a conversation.")
-    parser.add_argument("--skip-embeddings", action="store_true", help="Do not use embeddings.")
+    parser = PortugueseArgumentParser(description="Atendimento do Empório da Música pelo terminal.")
+    parser.add_argument("--db", default=None, help="Caminho alternativo do banco SQLite.")
+    parser.add_argument("--session", default=None, help="ID da sessão para continuar uma conversa.")
+    parser.add_argument("--skip-embeddings", action="store_true", help="Usar somente busca textual.")
     sub = parser.add_subparsers(dest="command", required=True)
-    ask = sub.add_parser("ask", help="Send a single message.")
+    ask = sub.add_parser("ask", help="Enviar uma única mensagem.")
     ask.add_argument("message")
-    sub.add_parser("chat", help="Open an interactive terminal chat.")
-    sub.add_parser("status", help="Show database and model status.")
+    sub.add_parser("chat", help="Abrir uma conversa interativa no terminal.")
+    sub.add_parser("status", help="Mostrar a situação do banco de dados e do modelo.")
     args = parser.parse_args()
     return asyncio.run(_main(args))
 

@@ -1,29 +1,51 @@
+{% from 'macros.html' import icon %}
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#202723">
   <title>{% block title %}Empório da Música{% endblock %}</title>
-  <link rel="stylesheet" href="/static/app.css">
-  <script src="/static/htmx.min.js" defer></script>
+  <link rel="stylesheet" href="{{ asset_url('app.css') }}">
+  <script src="{{ asset_url('htmx.min.js') }}" defer></script>
+  <script src="{{ asset_url('shell.js') }}" defer></script>
   {% block head %}{% endblock %}
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/">Empório da Música <span>support</span></a>
-    <nav>
-      <a href="/" class="{{ 'active' if active_nav|default('') == 'chat' else '' }}">Chat</a>
-      <a href="/ops" class="{{ 'active' if active_nav|default('') == 'dashboard' else '' }}">Dashboard</a>
-      <a href="/ops/catalog" class="{{ 'active' if active_nav|default('') == 'catalog' else '' }}">Catalog</a>
-      <a href="/ops/orders" class="{{ 'active' if active_nav|default('') == 'orders' else '' }}">Orders</a>
-      <a href="/ops/traces" class="{{ 'active' if active_nav|default('') == 'traces' else '' }}">Traces</a>
-      <a href="/ops/policy" class="{{ 'active' if active_nav|default('') == 'policy' else '' }}">Policies</a>
-      <a href="/ops/quality" class="{{ 'active' if active_nav|default('') == 'quality' else '' }}">Quality</a>
+  {% set current = active_nav|default('chat') %}
+  {% set pages = [('chat', '/', 'chat', 'Atendimento'), ('dashboard', '/ops', 'grid', 'Visão geral'), ('catalog', '/ops/catalog', 'catalog', 'Catálogo'), ('orders', '/ops/orders', 'bag', 'Pedidos'), ('traces', '/ops/traces', 'activity', 'Atividade do agente'), ('policy', '/ops/policy', 'book', 'Políticas da loja'), ('quality', '/ops/quality', 'shield', 'Qualidade dos dados')] %}
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <aside class="app-sidebar" id="app-navigation" aria-label="Navegação principal">
+    <a class="brand" href="/" aria-label="Empório da Música — início">
+      <span class="brand-mark">{{ icon('music') }}</span>
+      <span>Empório<span class="brand-subtitle">da Música<span class="brand-period">.</span></span></span>
+    </a>
+    <button class="icon-button nav-close" type="button" data-close-nav aria-label="Fechar navegação">{{ icon('close') }}</button>
+    <div class="nav-label">Seu espaço musical</div>
+    <nav class="primary-nav">
+      {% for key, href, glyph, label in pages %}
+        {% if key == 'dashboard' %}<div class="nav-label nav-divider">Operação da loja</div>{% endif %}
+        <a href="{{ href }}" class="nav-link {{ 'active' if current == key else '' }}" {% if current == key %}aria-current="page"{% endif %}>{{ icon(glyph) }}<span>{{ label }}</span>{% if current == key %}<span class="nav-dot"></span>{% endif %}</a>
+      {% endfor %}
     </nav>
-  </header>
-  <main class="{% block main_class %}container{% endblock %}">
-    {% block content %}{% endblock %}
-  </main>
+    <div class="sidebar-footer">
+      <div class="sidebar-store">{{ icon('pin') }}<div>Campo Grande, MS<span>Instrumentos. Histórias. Música.</span></div></div>
+      <div class="sidebar-signature">FEITO PARA QUEM VIVE A MÚSICA</div>
+    </div>
+  </aside>
+  <button class="nav-backdrop" type="button" data-close-nav aria-label="Fechar navegação" tabindex="-1" hidden></button>
+  <div class="workspace">
+    <header class="workspace-header">
+      <div class="row">
+        <button class="icon-button nav-toggle" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Abrir navegação">{{ icon('menu') }}</button>
+        <span class="breadcrumb">Empório da Música<span aria-hidden="true">/</span><strong>{% for key, href, glyph, label in pages %}{% if key == current %}{{ label }}{% endif %}{% endfor %}</strong></span>
+      </div>
+      <span class="workspace-badge"><span class="status-dot"></span>{{ 'Assistente virtual' if current == 'chat' else 'Painel operacional' }}</span>
+    </header>
+    <main id="main-content" class="{% block main_class %}container{% endblock %}" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
   {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -10,17 +10,31 @@ from pathlib import Path
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import pass_context
 from markupsafe import Markup
 
 from app.agent.orchestrator import Agent
 from app.domain.catalog import CatalogService
 from app.domain.money import format_brl
 from app.domain.orders import OrderService, format_date_br
+from app.web.assets import asset_url
+from app.web.presentation import format_datetime, issue_message, spec_value, ui_label
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 templates.env.globals["format_brl"] = format_brl
 templates.env.globals["format_date_br"] = format_date_br
+templates.env.globals["asset_url"] = asset_url
+
+
+@pass_context
+def datetime_br(context, value: str) -> str:
+    return format_datetime(value, context["request"].app.state.settings.app_timezone)
+
+
+templates.env.filters.update(
+    datetime_br=datetime_br, ui_label=ui_label, spec_value=spec_value, issue_message=issue_message
+)
 
 
 def render_message(text: str) -> Markup:
@@ -63,7 +77,7 @@ def _ensure_session(request: Request, session_id: str | None = None) -> str:
         conn.execute(
             """
             INSERT INTO sessions (session_id, title, state_json, created_at, updated_at)
-            VALUES (?, 'New conversation', '[]', ?, ?)
+            VALUES (?, 'Nova conversa', '[]', ?, ?)
             """,
             (sid, now, now),
         )
@@ -82,12 +96,16 @@ def _messages(request: Request, session_id: str) -> list[dict]:
 
 
 def _sessions(request: Request) -> list[dict]:
-    return [
+    sessions = [
         dict(row)
         for row in _conn(request).execute(
             "SELECT session_id, title, updated_at FROM sessions ORDER BY updated_at DESC LIMIT 20"
         )
     ]
+    for session in sessions:
+        if session["title"] == "New conversation":
+            session["title"] = "Nova conversa"
+    return sessions
 
 
 def _chat_context(request: Request, session_id: str) -> dict:
@@ -98,6 +116,7 @@ def _chat_context(request: Request, session_id: str) -> dict:
         "messages": _messages(request, session_id),
         "sessions": _sessions(request),
         "model": _settings(request).chat_model,
+        "timezone_name": _settings(request).app_timezone,
     }
 
 

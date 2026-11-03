@@ -8,20 +8,20 @@ from datetime import date
 from app.domain.money import format_brl
 
 STATUS_LABELS = {
-    "delivered": "Delivered",
-    "confirmed": "Confirmed",
-    "pending": "Pending",
-    "cancelled": "Cancelled",
-    "shipped": "Shipped",
+    "delivered": "Entregue",
+    "confirmed": "Confirmado",
+    "pending": "Pendente",
+    "cancelled": "Cancelado",
+    "shipped": "Enviado",
 }
 
 PAYMENT_LABELS = {
     "pix": "PIX",
-    "debit": "Debit card",
+    "debit": "Cartão de débito",
     "boleto": "Boleto",
-    "credit_3x": "Credit card (3x)",
-    "credit_6x": "Credit card (6x)",
-    "credit_12x": "Credit card (12x)",
+    "credit_3x": "Cartão de crédito (3x)",
+    "credit_6x": "Cartão de crédito (6x)",
+    "credit_12x": "Cartão de crédito (12x)",
 }
 
 
@@ -119,7 +119,7 @@ class OrderService:
         if row is None or not _matches_verifier(row, verifier):
             return {
                 "found": False,
-                "message": "Order not found or customer details do not match.",
+                "message": "Pedido não encontrado ou os dados do cliente não conferem.",
             }
         items = []
         for item in self.conn.execute(

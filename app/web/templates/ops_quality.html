@@ -1,32 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Quality · Empório da Música{% endblock %}
+{% block title %}Qualidade dos dados · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Data quality</h1>
-      <p>Anomalies detected during ingestion. The agent should handle these cases carefully.</p>
+      <span class="eyebrow">Uma base para boas respostas</span>
+      <h1>Qualidade dos dados</h1>
+      <p>Pontos de atenção identificados na importação dos dados da loja.</p>
     </div>
-    <a class="btn secondary" href="/ops">Back to dashboard</a>
+    <a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a>
   </div>
 
   <div class="panel">
-    <div class="table-wrap">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Pontos de atenção dos dados">
       <table>
-        <thead><tr><th>Severity</th><th>Code</th><th>Entity</th><th>Message</th></tr></thead>
+        <thead><tr><th>Nível</th><th>Verificação</th><th>Registro</th><th>Observação</th></tr></thead>
         <tbody>
           {% for issue in issues %}
             <tr>
               <td>
-                {% if issue.severity == "warning" %}<span class="badge amber">warning</span>
-                {% elif issue.severity == "info" %}<span class="badge blue">info</span>
-                {% else %}<span class="badge gray">{{ issue.severity }}</span>{% endif %}
+                <span class="badge {{ 'amber' if issue.severity == 'warning' else 'blue' }}">{{ issue.severity|ui_label }}</span>
               </td>
-              <td class="mono small">{{ issue.code }}</td>
-              <td class="small">{{ issue.entity_type }} {{ issue.entity_id }}</td>
-              <td class="small">{{ issue.message }}</td>
+              <td class="small">{{ issue.code|ui_label }}</td>
+              <td class="small">{{ issue.entity_type|ui_label }} #{{ issue.entity_id }}</td>
+              <td class="small">{{ issue.message|issue_message }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="4" class="muted">No issues recorded.</td></tr>
+            <tr><td colspan="4" class="muted empty-cell">Nenhum ponto de atenção registrado.</td></tr>
           {% endfor %}
         </tbody>
       </table>

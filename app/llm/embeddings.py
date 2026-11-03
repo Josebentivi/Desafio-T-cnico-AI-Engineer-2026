@@ -11,7 +11,7 @@ from app.config import Settings
 class OpenAIEmbeddingClient:
     def __init__(self, settings: Settings):
         if not settings.has_openai_key:
-            raise ValueError("OPENAI_API_KEY is not configured")
+            raise ValueError("OPENAI_API_KEY não configurada")
         kwargs = {"api_key": settings.openai_api_key}
         if settings.openai_base_url:
             kwargs["base_url"] = settings.openai_base_url

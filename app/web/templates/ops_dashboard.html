@@ -1,73 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Dashboard · Empório da Música{% endblock %}
+{% block title %}Visão geral · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
-    <div>
-      <h1>Operational dashboard</h1>
-      <p>Read-only view of data, policies, and agent runs.</p>
-    </div>
-    <a class="btn secondary" href="/">Open chat</a>
+    <div><span class="eyebrow">Nos bastidores do Empório</span><h1>Visão geral</h1><p>Acompanhe o catálogo, os pedidos e o atendimento em um só lugar.</p></div>
+    <a class="btn" href="/">Abrir atendimento{{ icon('arrow') }}</a>
   </div>
-
+  <section class="dashboard-welcome" aria-label="Apresentação do painel">
+    <div><span class="eyebrow">A operação no mesmo ritmo</span><h2>Tudo em sintonia.</h2><p>Informações da loja e consultas do assistente, com transparência em cada atendimento.</p></div>
+    <div class="welcome-art">{{ icon('music') }}</div>
+  </section>
   <div class="cards">
-    <div class="card"><div class="label">Products</div><div class="value">{{ counts.products }}</div></div>
-    <div class="card"><div class="label">Orders</div><div class="value">{{ counts.orders }}</div></div>
-    <div class="card"><div class="label">Customers</div><div class="value">{{ counts.customers }}</div></div>
-    <div class="card"><div class="label">Active promotions</div><div class="value">{{ counts.promotions }}</div></div>
-    <div class="card"><div class="label">Data issues</div><div class="value">{{ counts.issues }}</div></div>
-    <div class="card"><div class="label">Runs</div><div class="value">{{ counts.runs }}</div></div>
+    {% for key, label, glyph, description in [('products', 'Instrumentos', 'catalog', 'No catálogo da loja'), ('orders', 'Pedidos', 'bag', 'Compras registradas'), ('customers', 'Clientes', 'users', 'Na base de atendimento'), ('promotions', 'Promoções ativas', 'tag', 'Ofertas em vigor'), ('issues', 'Pontos de atenção', 'shield', 'Verificações dos dados'), ('runs', 'Atendimentos', 'activity', 'Execuções do assistente')] %}
+    <div class="card"><div class="metric-top"><span class="label">{{ label }}</span><span class="metric-icon {{ 'amber' if key in ['promotions', 'issues'] else '' }}">{{ icon(glyph) }}</span></div><div class="value">{{ counts[key] }}</div><div class="metric-foot">{{ description }}</div></div>
+    {% endfor %}
   </div>
-
-  <div class="panel" style="margin-top: 18px;">
-    <div class="panel-head">
-      <h2>Recent runs</h2>
-      <a class="small" href="/ops/traces">view all</a>
+  <section class="panel">
+    <div class="panel-head"><h2>Atendimentos recentes</h2><a href="/ops/traces">Ver atividade {{ icon('arrow') }}</a></div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Atendimentos recentes">
+      <table><thead><tr><th>Execução</th><th>Conversa</th><th>Data e hora</th><th class="num">Tokens</th><th class="num">Tempo</th><th>Situação</th></tr></thead><tbody>
+        {% for run in recent_runs %}<tr><td><a href="/ops/traces/{{ run.run_id }}">#{{ run.run_id }}</a></td><td>{{ run.title }}</td><td class="small muted">{{ run.created_at|datetime_br }}</td><td class="num">{{ run.input_tokens + run.output_tokens }}</td><td class="num">{{ run.latency_ms }} ms</td><td><span class="badge {{ 'red' if run.error else 'green' }}">{{ 'Erro' if run.error else 'Concluído' }}</span></td></tr>
+        {% else %}<tr><td colspan="6" class="muted empty-cell">Os atendimentos aparecerão aqui assim que você conversar com o assistente.</td></tr>{% endfor %}
+      </tbody></table>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Run</th><th>Conversation</th><th>When</th><th class="num">Tokens</th><th class="num">Latency</th><th>Status</th></tr></thead>
-        <tbody>
-          {% for run in recent_runs %}
-            <tr>
-              <td><a href="/ops/traces/{{ run.run_id }}">#{{ run.run_id }}</a></td>
-              <td>{{ run.title }}</td>
-              <td class="small muted">{{ run.created_at[:19].replace("T", " ") }}</td>
-              <td class="num">{{ run.input_tokens + run.output_tokens }}</td>
-              <td class="num">{{ run.latency_ms }} ms</td>
-              <td>{% if run.error %}<span class="badge red">error</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
-            </tr>
-          {% else %}
-            <tr><td colspan="6" class="muted">No runs recorded.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>Qualidade dos dados</h2><a href="/ops/quality">Ver detalhes {{ icon('arrow') }}</a></div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Pontos de atenção dos dados">
+      <table><thead><tr><th>Nível</th><th>Registro</th><th>Observação</th></tr></thead><tbody>
+        {% for issue in issues %}<tr><td><span class="badge {{ 'amber' if issue.severity == 'warning' else 'blue' }}">{{ issue.severity|ui_label }}</span></td><td class="small">{{ issue.entity_type|ui_label }} #{{ issue.entity_id }}</td><td class="small">{{ issue.message|issue_message }}</td></tr>
+        {% else %}<tr><td colspan="3" class="muted empty-cell">Nenhum ponto de atenção registrado.</td></tr>{% endfor %}
+      </tbody></table>
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h2>Data quality issues</h2>
-      <a class="small" href="/ops/quality">view all</a>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Severity</th><th>Entity</th><th>Message</th></tr></thead>
-        <tbody>
-          {% for issue in issues %}
-            <tr>
-              <td>
-                {% if issue.severity == "warning" %}<span class="badge amber">warning</span>
-                {% elif issue.severity == "info" %}<span class="badge blue">info</span>
-                {% else %}<span class="badge gray">{{ issue.severity }}</span>{% endif %}
-              </td>
-              <td class="small">{{ issue.entity_type }} {{ issue.entity_id }}</td>
-              <td class="small">{{ issue.message }}</td>
-            </tr>
-          {% else %}
-            <tr><td colspan="3" class="muted">No issues recorded.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  </section>
 {% endblock %}

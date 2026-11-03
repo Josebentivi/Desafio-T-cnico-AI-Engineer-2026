@@ -12,9 +12,9 @@ from app.domain.search_aliases import (
 )
 
 STATUS_LABELS = {
-    "active": "active",
-    "discontinued": "discontinued",
-    "coming_soon": "coming soon",
+    "active": "Ativo",
+    "discontinued": "Descontinuado",
+    "coming_soon": "Em breve",
 }
 
 CATEGORY_LABELS_EN = {

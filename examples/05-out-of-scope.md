@@ -1,5 +1,7 @@
 # Example 5 — Out-of-scope request
 
+> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+
 **Customer:** Do you sell guitar strings?
 
 **Assistant:** Empório da Música works exclusively with **musical instruments**. We do not carry accessories such as strings, picks, cables, cases, pedals, or amplifiers.
