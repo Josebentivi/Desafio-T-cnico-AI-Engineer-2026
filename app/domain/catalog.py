@@ -1,0 +1,191 @@
+from __future__ import annotations
+
+import re
+import sqlite3
+
+from app.domain.money import discount_cents, format_brl, pix_cents
+from app.domain.payments import payment_options
+
+STATUS_LABELS = {
+    "active": "ativo",
+    "discontinued": "descontinuado",
+    "coming_soon": "em breve",
+}
+
+
+def availability(status: str, stock: int) -> str:
+    if status == "discontinued":
+        return "discontinued"
+    if status == "coming_soon":
+        return "coming_soon"
+    if stock <= 0:
+        return "out_of_stock"
+    return "available"
+
+
+def fts_query(text: str) -> str:
+    terms = [
+        term
+        for term in re.findall(r"[0-9A-Za-zÀ-ÿ]+", text, flags=re.UNICODE)
+        if len(term) >= 2
+    ]
+    if not terms:
+        return ""
+    return " OR ".join(f'"{term}"*' for term in terms)
+
+
+def _product_payload(row: sqlite3.Row, *, full: bool = False) -> dict:
+    discount = row["discount_percent"]
+    price_cents = row["price_cents"]
+    promo = None
+    if discount:
+        promo_cents = discount_cents(price_cents, discount)
+        promo = {
+            "discount_percent": discount,
+            "price_cents": promo_cents,
+            "price_brl": format_brl(promo_cents),
+        }
+    pix_value = None if promo else pix_cents(price_cents)
+    payload = {
+        "product_id": row["product_id"],
+        "name": row["name"],
+        "category_id": row["category_id"],
+        "category": row["category_name"],
+        "price_cents": price_cents,
+        "price_brl": format_brl(price_cents),
+        "stock_quantity": row["stock_quantity"],
+        "status": row["status"],
+        "status_label": STATUS_LABELS.get(row["status"], row["status"]),
+        "availability": availability(row["status"], row["stock_quantity"]),
+        "promotion": promo,
+        "pix_price_brl": format_brl(pix_value) if pix_value is not None else None,
+        "pix_discount_percent": 5 if pix_value is not None else 0,
+    }
+    if full:
+        import json
+
+        payload["description"] = row["description"]
+        payload["specs"] = json.loads(row["specs_json"] or "{}")
+        effective_price = promo["price_cents"] if promo else price_cents
+        payload["payment_options"] = payment_options(
+            effective_price, allow_pix=promo is None
+        )
+    return payload
+
+
+class CatalogService:
+    def __init__(self, conn: sqlite3.Connection):
+        self.conn = conn
+
+    def search(
+        self,
+        *,
+        query: str | None = None,
+        category: str | None = None,
+        min_price_brl: float | None = None,
+        max_price_brl: float | None = None,
+        only_available: bool = False,
+        limit: int = 10,
+    ) -> list[dict]:
+        sql = """
+            SELECT p.*, c.name AS category_name,
+                   (SELECT pr.discount_percent
+                    FROM promotions pr
+                    WHERE pr.product_id = p.product_id AND pr.is_active = 1
+                    ORDER BY pr.discount_percent DESC
+                    LIMIT 1) AS discount_percent
+            FROM products p
+            JOIN categories c ON c.category_id = p.category_id
+        """
+        params: list = []
+        where: list[str] = []
+        fts = fts_query(query or "")
+        if fts:
+            sql += " JOIN product_fts ON product_fts.product_id = p.product_id "
+            where.append("product_fts MATCH ?")
+            params.append(fts)
+        if category:
+            if category.strip().isdigit():
+                where.append("p.category_id = ?")
+                params.append(int(category))
+            else:
+                where.append("c.name LIKE ?")
+                params.append(f"%{category.strip()}%")
+        if min_price_brl is not None:
+            where.append("p.price_cents >= ?")
+            params.append(round(min_price_brl * 100))
+        if max_price_brl is not None:
+            where.append("p.price_cents <= ?")
+            params.append(round(max_price_brl * 100))
+        if only_available:
+            where.append("p.status = 'active' AND p.stock_quantity > 0")
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        if fts:
+            sql += " ORDER BY bm25(product_fts), p.price_cents"
+        else:
+            sql += " ORDER BY p.price_cents, p.name"
+        sql += " LIMIT ?"
+        params.append(max(1, min(int(limit), 200)))
+        return [_product_payload(row) for row in self.conn.execute(sql, params)]
+
+    def get_product(self, product_id: int) -> dict | None:
+        row = self.conn.execute(
+            """
+            SELECT p.*, c.name AS category_name,
+                   (SELECT pr.discount_percent
+                    FROM promotions pr
+                    WHERE pr.product_id = p.product_id AND pr.is_active = 1
+                    ORDER BY pr.discount_percent DESC
+                    LIMIT 1) AS discount_percent
+            FROM products p
+            JOIN categories c ON c.category_id = p.category_id
+            WHERE p.product_id = ?
+            """,
+            (int(product_id),),
+        ).fetchone()
+        if row is None:
+            return None
+        return _product_payload(row, full=True)
+
+    def list_categories(self) -> list[dict]:
+        return [
+            dict(row)
+            for row in self.conn.execute(
+                """
+                SELECT c.category_id, c.name, COUNT(p.product_id) AS product_count
+                FROM categories c
+                LEFT JOIN products p ON p.category_id = c.category_id
+                GROUP BY c.category_id
+                ORDER BY c.category_id
+                """
+            )
+        ]
+
+    def active_promotions(self, product_id: int | None = None) -> list[dict]:
+        sql = """
+            SELECT pr.*, p.name, p.price_cents, p.status, p.stock_quantity
+            FROM promotions pr
+            JOIN products p ON p.product_id = pr.product_id
+            WHERE pr.is_active = 1
+        """
+        params: list = []
+        if product_id is not None:
+            sql += " AND pr.product_id = ?"
+            params.append(int(product_id))
+        sql += " ORDER BY pr.discount_percent DESC, p.name"
+        results = []
+        for row in self.conn.execute(sql, params):
+            promo_cents = discount_cents(row["price_cents"], row["discount_percent"])
+            results.append(
+                {
+                    "product_id": row["product_id"],
+                    "product_name": row["name"],
+                    "discount_percent": row["discount_percent"],
+                    "original_price_brl": format_brl(row["price_cents"]),
+                    "promo_price_brl": format_brl(promo_cents),
+                    "description": row["description"],
+                    "availability": availability(row["status"], row["stock_quantity"]),
+                }
+            )
+        return results

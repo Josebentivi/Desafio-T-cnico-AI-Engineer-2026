@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Políticas · Empório da Música{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Políticas</h1>
+      <p>{{ sections|length }} seções extraídas do manual v2.1.</p>
+    </div>
+    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+  </div>
+
+  <form class="filters"
+        hx-get="/ops/policy"
+        hx-target="#ops-content"
+        hx-select="#ops-content"
+        hx-push-url="true"
+        hx-trigger="submit">
+    <div class="field" style="flex: 1; min-width: 260px;">
+      <label for="q">Busca híbrida (embeddings + FTS5)</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="ex.: devolução, PIX, garantia, frete">
+    </div>
+    <button class="btn" type="submit">Buscar</button>
+  </form>
+
+  <div id="ops-content">
+    {% if q %}
+      <div class="panel">
+        <div class="panel-head"><h2>Resultados para “{{ q }}”</h2></div>
+        <div class="panel-body stack">
+          {% for result in results %}
+            <div class="card" style="box-shadow: none;">
+              <div class="spread">
+                <strong>{{ result.title }}</strong>
+                <span class="small muted">página {{ result.page }} · score {{ "%.4f"|format(result.score) }} · {{ result.sources|join(" + ") }}</span>
+              </div>
+              <p class="small" style="white-space: pre-wrap;">{{ result.text }}</p>
+            </div>
+          {% else %}
+            <p class="muted">Nenhuma seção encontrada.</p>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="panel">
+      <div class="panel-head"><h2>Seções do manual</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Seção</th><th>Título</th><th class="num">Página</th><th>Embedding</th></tr></thead>
+          <tbody>
+            {% for section in sections %}
+              <tr>
+                <td class="mono">{{ section.section_id }}</td>
+                <td>{{ section.title }}</td>
+                <td class="num">{{ section.page }}</td>
+                <td>{% if section.has_embedding %}<span class="badge green">ok</span>{% else %}<span class="badge gray">FTS5</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="msg user">
+  <div class="bubble">{{ message }}</div>
+</div>
+<div class="msg assistant">
+  <div class="bubble">{{ answer|render_message }}</div>
+</div>
+{% if warnings %}
+  <div class="warning small">
+    {% for warning in warnings %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+  </div>
+{% endif %}

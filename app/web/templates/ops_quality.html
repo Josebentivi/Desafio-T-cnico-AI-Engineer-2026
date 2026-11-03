@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Qualidade · Empório da Música{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Qualidade dos dados</h1>
+      <p>Anomalias detectadas na ingestão. O agente deve tratar esses casos com cautela.</p>
+    </div>
+    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+  </div>
+
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Severidade</th><th>Código</th><th>Entidade</th><th>Mensagem</th></tr></thead>
+        <tbody>
+          {% for issue in issues %}
+            <tr>
+              <td>
+                {% if issue.severity == "warning" %}<span class="badge amber">warning</span>
+                {% elif issue.severity == "info" %}<span class="badge blue">info</span>
+                {% else %}<span class="badge gray">{{ issue.severity }}</span>{% endif %}
+              </td>
+              <td class="mono small">{{ issue.code }}</td>
+              <td class="small">{{ issue.entity_type }} {{ issue.entity_id }}</td>
+              <td class="small">{{ issue.message }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="muted">Nenhuma anomalia registrada.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Atendimento · Empório da Música{% endblock %}
+{% block main_class %}chat-shell{% endblock %}
+{% block content %}
+  <aside class="chat-sidebar">
+    <div class="panel-head">
+      <h2>Conversas</h2>
+      <form method="post" action="/sessions/new">
+        <button class="btn small" type="submit">Nova</button>
+      </form>
+    </div>
+    <div class="session-list">
+      {% for item in sessions %}
+        <a class="session-link {{ 'active' if item.session_id == session_id else '' }}" href="/sessions/{{ item.session_id }}">
+          <span class="title">{{ item.title }}</span>
+          <span class="time">{{ item.updated_at[:16].replace("T", " ") }}</span>
+        </a>
+      {% else %}
+        <p class="muted small" style="padding: 8px 10px;">Nenhuma conversa ainda.</p>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <section class="chat-main">
+    <header class="chat-head">
+      <div>
+        <h1>Atendimento Empório da Música</h1>
+        <div class="status">Instrumentos musicais · Campo Grande/MS · {{ model }}</div>
+      </div>
+      <span class="badge green">online</span>
+    </header>
+
+    <div class="messages" id="messages">
+      {% if not messages %}
+        <div class="empty-chat" id="empty-chat">
+          <p><strong>Olá!</strong> Sou o assistente da Empório da Música. Posso ajudar com instrumentos, preços, pedidos, trocas e muito mais.</p>
+          <div class="suggestions">
+            <button class="suggestion" data-prompt="Quais violões vocês têm até R$ 1000?">Violões até R$ 1000</button>
+            <button class="suggestion" data-prompt="Quanto custa o Yamaha C40?">Preço do Yamaha C40</button>
+            <button class="suggestion" data-prompt="Qual o status do pedido 1? Meu nome é Pedro Henrique Oliveira.">Status do pedido 1</button>
+            <button class="suggestion" data-prompt="Me arrependi da compra online. Posso devolver?">Devolução</button>
+            <button class="suggestion" data-prompt="Vocês vendem cordas de violão?">Cordas de violão</button>
+          </div>
+        </div>
+      {% endif %}
+      {% for message in messages %}
+        <div class="msg {{ message.role }}">
+          <div class="bubble">{% if message.role == "assistant" %}{{ message.content|render_message }}{% else %}{{ message.content }}{% endif %}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <form class="composer" id="chat-form" data-session-id="{{ session_id }}">
+      <textarea id="chat-input" name="message" placeholder="Escreva sua mensagem..." rows="1" required></textarea>
+      <button class="btn" id="send-button" type="submit">Enviar</button>
+    </form>
+    <div class="composer-hint">O assistente consulta catálogo, pedidos e políticas antes de responder. Não compartilhe dados sensíveis.</div>
+  </section>
+{% endblock %}
+{% block scripts %}
+  <script src="/static/chat.js" defer></script>
+{% endblock %}

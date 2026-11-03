@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Pedidos · Empório da Música{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Pedidos</h1>
+      <p>{{ orders|length }} pedido(s) encontrados. Dados pessoais aparecem mascarados.</p>
+    </div>
+    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+  </div>
+
+  <form class="filters"
+        hx-get="/ops/orders"
+        hx-target="#ops-content"
+        hx-select="#ops-content"
+        hx-push-url="true"
+        hx-trigger="submit, change">
+    <div class="field">
+      <label for="q">Busca</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="número do pedido ou cliente">
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="">Todos</option>
+        {% for value, label in [('delivered', 'Entregue'), ('shipped', 'Enviado'), ('confirmed', 'Confirmado'), ('pending', 'Pendente'), ('cancelled', 'Cancelado')] %}
+          <option value="{{ value }}" {{ 'selected' if status == value else '' }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn" type="submit">Filtrar</button>
+  </form>
+
+  <div id="ops-content" class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Pedido</th><th>Cliente</th><th>Cidade</th><th>Data</th><th>Status</th><th class="num">Total</th><th>Pagamento</th><th class="num">Itens</th><th>Rastreio</th></tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td><a href="/ops/orders/{{ order.order_id }}">#{{ order.order_id }}</a></td>
+              <td>{{ order.customer_name }}<div class="small muted">{{ order.customer_email_masked }} · {{ order.customer_phone_masked }}</div></td>
+              <td class="small">{{ order.city }}</td>
+              <td class="small">{{ order.order_date_br }}</td>
+              <td>
+                {% if order.status == "delivered" %}<span class="badge green">Entregue</span>
+                {% elif order.status == "shipped" %}<span class="badge blue">Enviado</span>
+                {% elif order.status == "confirmed" %}<span class="badge blue">Confirmado</span>
+                {% elif order.status == "pending" %}<span class="badge amber">Pendente</span>
+                {% else %}<span class="badge red">Cancelado</span>{% endif %}
+              </td>
+              <td class="num">{{ order.total_brl }}</td>
+              <td class="small">{{ order.payment_method_label }}</td>
+              <td class="num">{{ order.item_count }}</td>
+              <td class="mono small">{{ order.tracking_code or "—" }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="muted">Nenhum pedido encontrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Produto · Empório da Música{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Produto</h1>
+      <p>Detalhes do catálogo e condições comerciais.</p>
+    </div>
+    <a class="btn secondary" href="/ops/catalog">Voltar ao catálogo</a>
+  </div>
+
+  {% if not product %}
+    <div class="panel"><div class="panel-body">Produto não encontrado.</div></div>
+  {% else %}
+    <div class="detail-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>{{ product.name }}</h2>
+          <span class="badge {{ 'green' if product.status == 'active' else 'red' if product.status == 'discontinued' else 'blue' }}">{{ product.status_label }}</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="kv">
+            <dt>ID</dt><dd>{{ product.product_id }}</dd>
+            <dt>Categoria</dt><dd>{{ product.category }}</dd>
+            <dt>Preço</dt><dd>{{ product.price_brl }}</dd>
+            <dt>Promoção</dt>
+            <dd>
+              {% if product.promotion %}
+                {{ product.promotion.discount_percent }}% · {{ product.promotion.price_brl }}
+              {% else %}<span class="muted">sem promoção ativa</span>{% endif %}
+            </dd>
+            <dt>PIX</dt><dd>{% if product.pix_price_brl %}{{ product.pix_price_brl }} (5% off){% else %}<span class="muted">não cumulativo com promoção</span>{% endif %}</dd>
+            <dt>Estoque</dt><dd>{{ product.stock_quantity }}</dd>
+            <dt>Disponibilidade</dt><dd>{{ product.availability }}</dd>
+          </div>
+          <div>
+            <h3 class="small muted">Descrição</h3>
+            <p>{{ product.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Especificações</h2></div>
+        <div class="panel-body">
+          <dl class="kv">
+            {% for key, value in product.specs.items() %}
+              <dt>{{ key }}</dt><dd>{{ value }}</dd>
+            {% endfor %}
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top: 18px;">
+      <div class="panel-head"><h2>Formas de pagamento</h2></div>
+      <div class="panel-body">
+        <div class="kv">
+          <dt>PIX</dt><dd>{% if product.payment_options.pix %}{{ product.payment_options.pix.price_brl }} (5% de desconto){% else %}<span class="muted">não se aplica sobre promoção</span>{% endif %}</dd>
+          <dt>Débito</dt><dd>{{ product.payment_options.debit.price_brl }}</dd>
+          <dt>Boleto</dt><dd>{{ product.payment_options.boleto.price_brl }}</dd>
+        </div>
+        <h3 class="small muted" style="margin-top: 16px;">Crédito sem juros</h3>
+        <div class="row">
+          {% for option in product.payment_options.credit %}
+            <span class="badge gray">{{ option.installments }}x {{ option.installment_brl }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

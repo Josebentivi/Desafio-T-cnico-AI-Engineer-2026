@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+data/app.db
+data/app.db-shm
+data/app.db-wal
+examples/*.tmp
+Desafio Técnico AI Engineer 2026/

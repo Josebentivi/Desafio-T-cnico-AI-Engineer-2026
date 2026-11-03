@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Traces · Empório da Música{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Traces do agente</h1>
+      <p>Execuções, ferramentas chamadas, tokens e latência.</p>
+    </div>
+    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+  </div>
+
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Run</th><th>Conversa</th><th>Quando</th><th>Modelo</th><th>Effort</th><th class="num">Tokens</th><th class="num">Latência</th><th class="num">Custo</th><th class="num">Tools</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for run in runs %}
+            <tr>
+              <td><a href="/ops/traces/{{ run.run_id }}">#{{ run.run_id }}</a></td>
+              <td>{{ run.title }}</td>
+              <td class="small muted">{{ run.created_at[:19].replace("T", " ") }}</td>
+              <td class="small">{{ run.model }}</td>
+              <td class="small">{{ run.reasoning_effort }}</td>
+              <td class="num">{{ run.input_tokens + run.output_tokens }}</td>
+              <td class="num">{{ run.latency_ms }} ms</td>
+              <td class="num">US$ {{ "%.5f"|format(run.estimated_cost_usd) }}</td>
+              <td class="num">{{ run.tool_count }}</td>
+              <td>{% if run.error %}<span class="badge red">erro</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="10" class="muted">Nenhuma execução registrada.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
