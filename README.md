@@ -16,6 +16,7 @@ The agent checks the catalog and orders in SQLite, retrieves rules from the poli
 - `numpy` for cosine similarity
 - `pdfplumber` only for offline policy extraction
 - `tzdata` for the `America/Campo_Grande` timezone on Windows
+- FastAPI `0.162.0` and Starlette `1.10.0` are pinned because the template-rendering API is version-sensitive
 
 ## How to run
 
