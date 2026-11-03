@@ -26,6 +26,7 @@ templates.env.globals["format_date_br"] = format_date_br
 def render_message(text: str) -> Markup:
     escaped = html.escape(text or "")
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"~~(.+?)~~", r"<del>\1</del>", escaped)
     return Markup(escaped.replace("\n", "<br>"))
 
 
@@ -62,7 +63,7 @@ def _ensure_session(request: Request, session_id: str | None = None) -> str:
         conn.execute(
             """
             INSERT INTO sessions (session_id, title, state_json, created_at, updated_at)
-            VALUES (?, 'Nova conversa', '[]', ?, ?)
+            VALUES (?, 'New conversation', '[]', ?, ?)
             """,
             (sid, now, now),
         )

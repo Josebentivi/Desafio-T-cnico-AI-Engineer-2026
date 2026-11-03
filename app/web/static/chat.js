@@ -17,6 +17,7 @@
       .replace(/>/g, "&gt;");
     return escaped
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/~~(.+?)~~/g, "<del>$1</del>")
       .replace(/\n/g, "<br>");
   }
 
@@ -40,7 +41,7 @@
     const details = document.createElement("details");
     details.className = "trace";
     const summary = document.createElement("summary");
-    summary.textContent = "Ver consulta";
+    summary.textContent = "View lookup";
     const body = document.createElement("div");
     body.className = "trace-body";
     details.appendChild(summary);
@@ -90,7 +91,7 @@
     input.style.height = "auto";
     input.disabled = true;
     button.disabled = true;
-    button.textContent = "Aguarde";
+    button.textContent = "Please wait";
 
     const assistant = appendMessage("assistant", "");
     assistant.bubble.classList.add("streaming");
@@ -164,15 +165,15 @@
       }
       if (assistant.bubble.classList.contains("streaming")) {
         assistant.bubble.classList.remove("streaming");
-        if (!finalText) assistant.bubble.textContent = "Não recebi uma resposta completa. Pode tentar de novo?";
+        if (!finalText) assistant.bubble.textContent = "I did not receive a complete response. Please try again.";
       }
     } catch (error) {
       assistant.bubble.classList.remove("streaming");
-      assistant.bubble.textContent = `Não consegui falar com o servidor agora: ${error.message}`;
+      assistant.bubble.textContent = `I could not reach the server: ${error.message}`;
     } finally {
       input.disabled = false;
       button.disabled = false;
-      button.textContent = "Enviar";
+      button.textContent = "Send";
       input.focus();
       scrollToBottom();
     }

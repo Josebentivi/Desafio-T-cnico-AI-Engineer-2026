@@ -5,6 +5,7 @@ import json
 from dataclasses import replace
 
 from app.agent.orchestrator import Agent
+from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.tools import Toolbox
 from app.llm.embeddings import FakeEmbeddingClient
 from app.llm.fake import FakeLLM, FakeTurn, function_call
@@ -14,6 +15,10 @@ def make_agent(conn, settings, turns):
     llm = FakeLLM(turns)
     toolbox = Toolbox(conn, embedding_client=FakeEmbeddingClient(16))
     return Agent(conn, llm, toolbox, settings), llm
+
+
+def test_system_prompt_requires_english():
+    assert "Always answer in English" in SYSTEM_PROMPT
 
 
 def test_agent_executes_tool_and_persists(conn, settings):
@@ -26,7 +31,7 @@ def test_agent_executes_tool_and_persists(conn, settings):
                     function_call(
                         "search_products",
                         {
-                            "query": "violão",
+                            "query": "acoustic guitar",
                             "category": None,
                             "min_price_brl": None,
                             "max_price_brl": 1000.0,
@@ -36,11 +41,11 @@ def test_agent_executes_tool_and_persists(conn, settings):
                     )
                 ]
             ),
-            FakeTurn(text="Encontrei três violões disponíveis até R$ 1.000."),
+            FakeTurn(text="I found three acoustic guitars available under R$ 1,000."),
         ],
     )
-    result = asyncio.run(agent.run("s1", "Quais violões até 1000?"))
-    assert result.text.startswith("Encontrei três")
+    result = asyncio.run(agent.run("s1", "Which acoustic guitars are under R$ 1,000?"))
+    assert result.text.startswith("I found three")
     assert result.tool_calls[0]["name"] == "search_products"
     assert conn.execute("SELECT COUNT(*) AS n FROM messages").fetchone()["n"] == 2
     assert conn.execute("SELECT COUNT(*) AS n FROM tool_calls").fetchone()["n"] == 1
@@ -69,11 +74,11 @@ def test_agent_order_verification_found(conn, settings):
                     )
                 ]
             ),
-            FakeTurn(text="Seu pedido está entregue."),
+            FakeTurn(text="Your order has been delivered."),
         ],
     )
-    result = asyncio.run(agent.run("s2", "Qual o status do pedido 3?"))
-    assert result.text == "Seu pedido está entregue."
+    result = asyncio.run(agent.run("s2", "What is the status of order 3?"))
+    assert result.text == "Your order has been delivered."
     output = json.loads(
         conn.execute("SELECT output_json FROM tool_calls WHERE run_id = ?", (result.run_id,))
         .fetchone()["output_json"]
@@ -95,10 +100,10 @@ def test_agent_order_verification_rejects_wrong_customer(conn, settings):
                     )
                 ]
             ),
-            FakeTurn(text="Não encontrei esse pedido com os dados informados."),
+            FakeTurn(text="I could not find that order with the details provided."),
         ],
     )
-    result = asyncio.run(agent.run("s3", "Pedido 3, sou Pedro."))
+    result = asyncio.run(agent.run("s3", "Order 3, I am Pedro."))
     output = json.loads(
         conn.execute("SELECT output_json FROM tool_calls WHERE run_id = ?", (result.run_id,))
         .fetchone()["output_json"]
@@ -113,13 +118,13 @@ def test_agent_policy_tool(conn, settings):
         [
             FakeTurn(
                 function_calls=[
-                    function_call("search_policy", {"query": "devolução", "top_k": 2})
+                    function_call("search_policy", {"query": "return policy", "top_k": 2})
                 ]
             ),
-            FakeTurn(text="Conforme a política 4.1, você pode devolver em até 7 dias."),
+            FakeTurn(text="Under policy 4.1, you can return it within 7 days."),
         ],
     )
-    result = asyncio.run(agent.run("s4", "Posso devolver?"))
+    result = asyncio.run(agent.run("s4", "Can I return it?"))
     output = json.loads(
         conn.execute("SELECT output_json FROM tool_calls WHERE run_id = ?", (result.run_id,))
         .fetchone()["output_json"]
@@ -135,8 +140,8 @@ def test_agent_stops_after_max_iterations(conn, settings):
         for i in range(5)
     ]
     agent, _ = make_agent(conn, limited, turns)
-    result = asyncio.run(agent.run("s5", "Que horas vocês abrem?"))
-    assert "não consegui concluir" in result.text
+    result = asyncio.run(agent.run("s5", "What time do you open?"))
+    assert "could not complete the lookup" in result.text
     assert conn.execute("SELECT COUNT(*) AS n FROM tool_calls").fetchone()["n"] == 2
 
 
@@ -150,7 +155,7 @@ def test_agent_grounding_warning(conn, settings):
                     function_call(
                         "search_products",
                         {
-                            "query": "violão",
+                            "query": "acoustic guitar",
                             "category": None,
                             "min_price_brl": None,
                             "max_price_brl": None,
@@ -160,22 +165,22 @@ def test_agent_grounding_warning(conn, settings):
                     )
                 ]
             ),
-            FakeTurn(text="O preço é R$ 9.999,99."),
+            FakeTurn(text="The price is R$ 9.999,99."),
         ],
     )
-    result = asyncio.run(agent.run("s6", "Quanto custa?"))
+    result = asyncio.run(agent.run("s6", "How much is it?"))
     assert result.warnings
     assert "9.999,99" in result.warnings[0]
 
 
 def test_agent_stream_events(conn, settings):
-    agent, _ = make_agent(conn, settings, [FakeTurn(text="Olá, tudo bem?")])
+    agent, _ = make_agent(conn, settings, [FakeTurn(text="Hello, how are you?")])
 
     async def collect():
-        return [event async for event in agent.run_stream("s7", "Oi")]
+        return [event async for event in agent.run_stream("s7", "Hi")]
 
     events = asyncio.run(collect())
     types = [event["type"] for event in events]
     assert "token" in types
     assert types[-1] == "done"
-    assert events[-1]["text"] == "Olá, tudo bem?"
+    assert events[-1]["text"] == "Hello, how are you?"

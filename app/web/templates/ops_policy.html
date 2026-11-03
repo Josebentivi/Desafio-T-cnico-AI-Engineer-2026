@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Políticas · Empório da Música{% endblock %}
+{% block title %}Policies · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Políticas</h1>
-      <p>{{ sections|length }} seções extraídas do manual v2.1.</p>
+      <h1>Policies</h1>
+      <p>{{ sections|length }} sections extracted from manual v2.1. Manual text remains in Portuguese; the agent answers in English.</p>
     </div>
-    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+    <a class="btn secondary" href="/ops">Back to dashboard</a>
   </div>
 
   <form class="filters"
@@ -16,37 +16,37 @@
         hx-push-url="true"
         hx-trigger="submit">
     <div class="field" style="flex: 1; min-width: 260px;">
-      <label for="q">Busca híbrida (embeddings + FTS5)</label>
-      <input id="q" name="q" value="{{ q }}" placeholder="ex.: devolução, PIX, garantia, frete">
+      <label for="q">Hybrid search (embeddings + FTS5)</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="e.g. return, PIX, warranty, shipping">
     </div>
-    <button class="btn" type="submit">Buscar</button>
+    <button class="btn" type="submit">Search</button>
   </form>
 
   <div id="ops-content">
     {% if q %}
       <div class="panel">
-        <div class="panel-head"><h2>Resultados para “{{ q }}”</h2></div>
+        <div class="panel-head"><h2>Results for “{{ q }}”</h2></div>
         <div class="panel-body stack">
           {% for result in results %}
             <div class="card" style="box-shadow: none;">
               <div class="spread">
                 <strong>{{ result.title }}</strong>
-                <span class="small muted">página {{ result.page }} · score {{ "%.4f"|format(result.score) }} · {{ result.sources|join(" + ") }}</span>
+                <span class="small muted">page {{ result.page }} · score {{ "%.4f"|format(result.score) }} · {{ result.sources|join(" + ") }}</span>
               </div>
               <p class="small" style="white-space: pre-wrap;">{{ result.text }}</p>
             </div>
           {% else %}
-            <p class="muted">Nenhuma seção encontrada.</p>
+            <p class="muted">No sections found.</p>
           {% endfor %}
         </div>
       </div>
     {% endif %}
 
     <div class="panel">
-      <div class="panel-head"><h2>Seções do manual</h2></div>
+      <div class="panel-head"><h2>Manual sections</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Seção</th><th>Título</th><th class="num">Página</th><th>Embedding</th></tr></thead>
+          <thead><tr><th>Section</th><th>Title</th><th class="num">Page</th><th>Embedding</th></tr></thead>
           <tbody>
             {% for section in sections %}
               <tr>

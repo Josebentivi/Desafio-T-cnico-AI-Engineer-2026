@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Catálogo · Empório da Música{% endblock %}
+{% block title %}Catalog · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Catálogo</h1>
-      <p>{{ products|length }} produto(s) encontrados.</p>
+      <h1>Catalog</h1>
+      <p>{{ products|length }} product(s) found.</p>
     </div>
-    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+    <a class="btn secondary" href="/ops">Back to dashboard</a>
   </div>
 
   <form class="filters"
@@ -16,57 +16,57 @@
         hx-push-url="true"
         hx-trigger="submit, change">
     <div class="field">
-      <label for="q">Busca</label>
-      <input id="q" name="q" value="{{ q }}" placeholder="nome, descrição, spec">
+      <label for="q">Search</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="name, description, spec">
     </div>
     <div class="field">
-      <label for="category">Categoria</label>
+      <label for="category">Category</label>
       <select id="category" name="category">
-        <option value="">Todas</option>
+        <option value="">All</option>
         {% for cat in categories %}
-          <option value="{{ cat.category_id }}" {{ 'selected' if cat.category_id|string == category else '' }}>{{ cat.name }} ({{ cat.product_count }})</option>
+          <option value="{{ cat.category_id }}" {{ 'selected' if cat.category_id|string == category else '' }}>{{ cat.name_en }} ({{ cat.product_count }})</option>
         {% endfor %}
       </select>
     </div>
     <div class="field">
       <label for="status">Status</label>
       <select id="status" name="status">
-        <option value="">Todos</option>
-        <option value="active" {{ 'selected' if status == 'active' else '' }}>Ativo</option>
-        <option value="discontinued" {{ 'selected' if status == 'discontinued' else '' }}>Descontinuado</option>
-        <option value="coming_soon" {{ 'selected' if status == 'coming_soon' else '' }}>Em breve</option>
+        <option value="">All</option>
+        <option value="active" {{ 'selected' if status == 'active' else '' }}>Active</option>
+        <option value="discontinued" {{ 'selected' if status == 'discontinued' else '' }}>Discontinued</option>
+        <option value="coming_soon" {{ 'selected' if status == 'coming_soon' else '' }}>Coming soon</option>
       </select>
     </div>
     <label class="row small" style="padding-bottom: 9px;">
       <input type="checkbox" name="only_available" value="true" {{ 'checked' if only_available else '' }}>
-      só disponíveis
+      available only
     </label>
-    <button class="btn" type="submit">Filtrar</button>
+    <button class="btn" type="submit">Filter</button>
   </form>
 
   <div id="ops-content" class="panel">
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>ID</th><th>Produto</th><th>Categoria</th><th class="num">Preço</th><th>Status</th><th>Disponibilidade</th><th class="num">Estoque</th><th>Promoção</th></tr>
+          <tr><th>ID</th><th>Product</th><th>Category</th><th class="num">Price</th><th>Status</th><th>Availability</th><th class="num">Stock</th><th>Promotion</th></tr>
         </thead>
         <tbody>
           {% for product in products %}
             <tr>
               <td>{{ product.product_id }}</td>
               <td><a href="/ops/catalog/{{ product.product_id }}">{{ product.name }}</a></td>
-              <td class="small">{{ product.category }}</td>
+              <td class="small">{{ product.category_en }}</td>
               <td class="num">{{ product.price_brl }}</td>
               <td>
-                {% if product.status == "active" %}<span class="badge green">ativo</span>
-                {% elif product.status == "discontinued" %}<span class="badge red">descontinuado</span>
-                {% else %}<span class="badge blue">em breve</span>{% endif %}
+                {% if product.status == "active" %}<span class="badge green">active</span>
+                {% elif product.status == "discontinued" %}<span class="badge red">discontinued</span>
+                {% else %}<span class="badge blue">coming soon</span>{% endif %}
               </td>
               <td class="small">
-                {% if product.availability == "available" %}<span class="badge green">disponível</span>
-                {% elif product.availability == "out_of_stock" %}<span class="badge amber">sem estoque</span>
-                {% elif product.availability == "discontinued" %}<span class="badge red">fora de linha</span>
-                {% else %}<span class="badge blue">em breve</span>{% endif %}
+                {% if product.availability == "available" %}<span class="badge green">available</span>
+                {% elif product.availability == "out_of_stock" %}<span class="badge amber">out of stock</span>
+                {% elif product.availability == "discontinued" %}<span class="badge red">discontinued</span>
+                {% else %}<span class="badge blue">coming soon</span>{% endif %}
               </td>
               <td class="num">{{ product.stock_quantity }}</td>
               <td class="small">
@@ -76,7 +76,7 @@
               </td>
             </tr>
           {% else %}
-            <tr><td colspan="8" class="muted">Nenhum produto encontrado.</td></tr>
+            <tr><td colspan="8" class="muted">No products found.</td></tr>
           {% endfor %}
         </tbody>
       </table>

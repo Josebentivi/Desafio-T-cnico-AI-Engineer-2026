@@ -5,11 +5,24 @@ import sqlite3
 
 from app.domain.money import discount_cents, format_brl, pix_cents
 from app.domain.payments import payment_options
+from app.domain.search_aliases import expand_catalog_query, resolve_category_id
 
 STATUS_LABELS = {
-    "active": "ativo",
-    "discontinued": "descontinuado",
-    "coming_soon": "em breve",
+    "active": "active",
+    "discontinued": "discontinued",
+    "coming_soon": "coming soon",
+}
+
+CATEGORY_LABELS_EN = {
+    "Guitarras": "Electric guitars",
+    "Baixos": "Basses",
+    "Baterias e Percussão": "Drums & percussion",
+    "Teclados e Pianos": "Keyboards & pianos",
+    "Violões": "Acoustic guitars",
+    "Instrumentos de Sopro (Madeiras)": "Woodwinds",
+    "Instrumentos de Sopro (Metais)": "Brass",
+    "Cordas Orquestrais": "Orchestral strings",
+    "Ukuleles": "Ukuleles",
 }
 
 
@@ -51,6 +64,7 @@ def _product_payload(row: sqlite3.Row, *, full: bool = False) -> dict:
         "name": row["name"],
         "category_id": row["category_id"],
         "category": row["category_name"],
+        "category_en": CATEGORY_LABELS_EN.get(row["category_name"], row["category_name"]),
         "price_cents": price_cents,
         "price_brl": format_brl(price_cents),
         "stock_quantity": row["stock_quantity"],
@@ -99,13 +113,17 @@ class CatalogService:
         """
         params: list = []
         where: list[str] = []
-        fts = fts_query(query or "")
+        fts = fts_query(expand_catalog_query(query or ""))
         if fts:
             sql += " JOIN product_fts ON product_fts.product_id = p.product_id "
             where.append("product_fts MATCH ?")
             params.append(fts)
         if category:
-            if category.strip().isdigit():
+            category_id = resolve_category_id(category)
+            if category_id is not None:
+                where.append("p.category_id = ?")
+                params.append(category_id)
+            elif category.strip().isdigit():
                 where.append("p.category_id = ?")
                 params.append(int(category))
             else:
@@ -149,18 +167,22 @@ class CatalogService:
         return _product_payload(row, full=True)
 
     def list_categories(self) -> list[dict]:
-        return [
-            dict(row)
-            for row in self.conn.execute(
-                """
-                SELECT c.category_id, c.name, COUNT(p.product_id) AS product_count
-                FROM categories c
-                LEFT JOIN products p ON p.category_id = c.category_id
-                GROUP BY c.category_id
-                ORDER BY c.category_id
-                """
+        categories = []
+        for row in self.conn.execute(
+            """
+            SELECT c.category_id, c.name, COUNT(p.product_id) AS product_count
+            FROM categories c
+            LEFT JOIN products p ON p.category_id = c.category_id
+            GROUP BY c.category_id
+            ORDER BY c.category_id
+            """
+        ):
+            category = dict(row)
+            category["name_en"] = CATEGORY_LABELS_EN.get(
+                category["name"], category["name"]
             )
-        ]
+            categories.append(category)
+        return categories
 
     def active_promotions(self, product_id: int | None = None) -> list[dict]:
         sql = """

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Pedidos · Empório da Música{% endblock %}
+{% block title %}Orders · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Pedidos</h1>
-      <p>{{ orders|length }} pedido(s) encontrados. Dados pessoais aparecem mascarados.</p>
+      <h1>Orders</h1>
+      <p>{{ orders|length }} order(s) found. Personal data is masked.</p>
     </div>
-    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+    <a class="btn secondary" href="/ops">Back to dashboard</a>
   </div>
 
   <form class="filters"
@@ -16,26 +16,26 @@
         hx-push-url="true"
         hx-trigger="submit, change">
     <div class="field">
-      <label for="q">Busca</label>
-      <input id="q" name="q" value="{{ q }}" placeholder="número do pedido ou cliente">
+      <label for="q">Search</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="order number or customer">
     </div>
     <div class="field">
       <label for="status">Status</label>
       <select id="status" name="status">
-        <option value="">Todos</option>
-        {% for value, label in [('delivered', 'Entregue'), ('shipped', 'Enviado'), ('confirmed', 'Confirmado'), ('pending', 'Pendente'), ('cancelled', 'Cancelado')] %}
+        <option value="">All</option>
+        {% for value, label in [('delivered', 'Delivered'), ('shipped', 'Shipped'), ('confirmed', 'Confirmed'), ('pending', 'Pending'), ('cancelled', 'Cancelled')] %}
           <option value="{{ value }}" {{ 'selected' if status == value else '' }}>{{ label }}</option>
         {% endfor %}
       </select>
     </div>
-    <button class="btn" type="submit">Filtrar</button>
+    <button class="btn" type="submit">Filter</button>
   </form>
 
   <div id="ops-content" class="panel">
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Pedido</th><th>Cliente</th><th>Cidade</th><th>Data</th><th>Status</th><th class="num">Total</th><th>Pagamento</th><th class="num">Itens</th><th>Rastreio</th></tr>
+          <tr><th>Order</th><th>Customer</th><th>City</th><th>Date</th><th>Status</th><th class="num">Total</th><th>Payment</th><th class="num">Items</th><th>Tracking</th></tr>
         </thead>
         <tbody>
           {% for order in orders %}
@@ -45,11 +45,11 @@
               <td class="small">{{ order.city }}</td>
               <td class="small">{{ order.order_date_br }}</td>
               <td>
-                {% if order.status == "delivered" %}<span class="badge green">Entregue</span>
-                {% elif order.status == "shipped" %}<span class="badge blue">Enviado</span>
-                {% elif order.status == "confirmed" %}<span class="badge blue">Confirmado</span>
-                {% elif order.status == "pending" %}<span class="badge amber">Pendente</span>
-                {% else %}<span class="badge red">Cancelado</span>{% endif %}
+                {% if order.status == "delivered" %}<span class="badge green">Delivered</span>
+                {% elif order.status == "shipped" %}<span class="badge blue">Shipped</span>
+                {% elif order.status == "confirmed" %}<span class="badge blue">Confirmed</span>
+                {% elif order.status == "pending" %}<span class="badge amber">Pending</span>
+                {% else %}<span class="badge red">Cancelled</span>{% endif %}
               </td>
               <td class="num">{{ order.total_brl }}</td>
               <td class="small">{{ order.payment_method_label }}</td>
@@ -57,7 +57,7 @@
               <td class="mono small">{{ order.tracking_code or "—" }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="9" class="muted">Nenhum pedido encontrado.</td></tr>
+            <tr><td colspan="9" class="muted">No orders found.</td></tr>
           {% endfor %}
         </tbody>
       </table>

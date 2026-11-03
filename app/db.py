@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS policy_sections (
 
 CREATE TABLE IF NOT EXISTS sessions (
     session_id TEXT PRIMARY KEY,
-    title TEXT NOT NULL DEFAULT 'Nova conversa',
+    title TEXT NOT NULL DEFAULT 'New conversation',
     state_json TEXT NOT NULL DEFAULT '[]',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL

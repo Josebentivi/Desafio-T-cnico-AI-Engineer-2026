@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Atendimento · Empório da Música{% endblock %}
+{% block title %}Support · Empório da Música{% endblock %}
 {% block main_class %}chat-shell{% endblock %}
 {% block content %}
   <aside class="chat-sidebar">
     <div class="panel-head">
-      <h2>Conversas</h2>
+      <h2>Conversations</h2>
       <form method="post" action="/sessions/new">
-        <button class="btn small" type="submit">Nova</button>
+        <button class="btn small" type="submit">New</button>
       </form>
     </div>
     <div class="session-list">
@@ -16,7 +16,7 @@
           <span class="time">{{ item.updated_at[:16].replace("T", " ") }}</span>
         </a>
       {% else %}
-        <p class="muted small" style="padding: 8px 10px;">Nenhuma conversa ainda.</p>
+        <p class="muted small" style="padding: 8px 10px;">No conversations yet.</p>
       {% endfor %}
     </div>
   </aside>
@@ -24,8 +24,8 @@
   <section class="chat-main">
     <header class="chat-head">
       <div>
-        <h1>Atendimento Empório da Música</h1>
-        <div class="status">Instrumentos musicais · Campo Grande/MS · {{ model }}</div>
+        <h1>Empório da Música Support</h1>
+        <div class="status">Musical instruments · Campo Grande/MS · {{ model }}</div>
       </div>
       <span class="badge green">online</span>
     </header>
@@ -33,13 +33,13 @@
     <div class="messages" id="messages">
       {% if not messages %}
         <div class="empty-chat" id="empty-chat">
-          <p><strong>Olá!</strong> Sou o assistente da Empório da Música. Posso ajudar com instrumentos, preços, pedidos, trocas e muito mais.</p>
+          <p><strong>Hi!</strong> I'm the Empório da Música assistant. I can help with instruments, prices, orders, returns, and more.</p>
           <div class="suggestions">
-            <button class="suggestion" data-prompt="Quais violões vocês têm até R$ 1000?">Violões até R$ 1000</button>
-            <button class="suggestion" data-prompt="Quanto custa o Yamaha C40?">Preço do Yamaha C40</button>
-            <button class="suggestion" data-prompt="Qual o status do pedido 1? Meu nome é Pedro Henrique Oliveira.">Status do pedido 1</button>
-            <button class="suggestion" data-prompt="Me arrependi da compra online. Posso devolver?">Devolução</button>
-            <button class="suggestion" data-prompt="Vocês vendem cordas de violão?">Cordas de violão</button>
+            <button class="suggestion" data-prompt="Which acoustic guitars do you have under R$ 1,000?">Acoustic guitars under R$ 1,000</button>
+            <button class="suggestion" data-prompt="How much is the Yamaha C40?">Yamaha C40 price</button>
+            <button class="suggestion" data-prompt="What is the status of order 1? My name is Pedro Henrique Oliveira.">Order 1 status</button>
+            <button class="suggestion" data-prompt="I changed my mind about an online purchase. Can I return it?">Return policy</button>
+            <button class="suggestion" data-prompt="Do you sell guitar strings?">Guitar strings</button>
           </div>
         </div>
       {% endif %}
@@ -51,10 +51,10 @@
     </div>
 
     <form class="composer" id="chat-form" data-session-id="{{ session_id }}">
-      <textarea id="chat-input" name="message" placeholder="Escreva sua mensagem..." rows="1" required></textarea>
-      <button class="btn" id="send-button" type="submit">Enviar</button>
+      <textarea id="chat-input" name="message" placeholder="Type your message..." rows="1" required></textarea>
+      <button class="btn" id="send-button" type="submit">Send</button>
     </form>
-    <div class="composer-hint">O assistente consulta catálogo, pedidos e políticas antes de responder. Não compartilhe dados sensíveis.</div>
+    <div class="composer-hint">The assistant checks the catalog, orders, and policies before answering. Do not share sensitive data.</div>
   </section>
 {% endblock %}
 {% block scripts %}

@@ -23,6 +23,38 @@ def test_fts_only_search(conn):
     assert "4.1" in ids
 
 
+def test_fts_only_english_search(conn):
+    service = PolicyService(conn, None)
+
+    returns = asyncio.run(service.search("return policy", 5))
+    assert "4.1" in [result["section_id"] for result in returns]
+
+    warranty = asyncio.run(service.search("warranty", 5))
+    assert "8.1" in [result["section_id"] for result in warranty]
+
+    shipping = asyncio.run(service.search("shipping", 5))
+    assert "5.1" in [result["section_id"] for result in shipping]
+
+
+def test_hybrid_search_english_queries(conn):
+    service = PolicyService(conn, FakeEmbeddingClient(16))
+
+    returns = asyncio.run(service.search("I want to return an online purchase", 5))
+    assert "4.1" in [result["section_id"] for result in returns]
+
+    pix = asyncio.run(service.search("PIX discount", 5))
+    assert {"3", "3.1", "6.2"} & {result["section_id"] for result in pix}
+
+    warranty = asyncio.run(service.search("legal warranty period", 5))
+    assert "8.1" in [result["section_id"] for result in warranty]
+
+    shipping = asyncio.run(service.search("shipping in Campo Grande", 5))
+    assert "5.1" in [result["section_id"] for result in shipping]
+
+    accessories = asyncio.run(service.search("do you sell guitar strings?", 5))
+    assert {"1", "7.1"} & {result["section_id"] for result in accessories}
+
+
 def test_hybrid_search_relevant_sections(conn):
     service = PolicyService(conn, FakeEmbeddingClient(16))
 

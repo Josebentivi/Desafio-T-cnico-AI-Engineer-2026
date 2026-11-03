@@ -49,10 +49,10 @@ async def _ask(agent: Agent, session_id: str, message: str) -> None:
 
 
 async def _chat(agent: Agent, session_id: str) -> None:
-    print("Empório da Música — atendimento. Digite 'sair' para encerrar.")
+    print("Empório da Música support. Type 'exit' to quit.")
     while True:
         try:
-            message = input("\nVocê: ").strip()
+            message = input("\nYou: ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
             break
@@ -60,7 +60,7 @@ async def _chat(agent: Agent, session_id: str) -> None:
             break
         if not message:
             continue
-        print("Assistente: ", end="", flush=True)
+        print("Assistant: ", end="", flush=True)
         await _ask(agent, session_id, message)
 
 
@@ -72,9 +72,9 @@ async def _main(args) -> int:
         elif args.command == "chat":
             await _chat(agent, args.session or uuid.uuid4().hex)
         elif args.command == "status":
-            print(f"Banco: {settings.database_file}")
-            print(f"Modelo: {settings.chat_model}")
-            print(f"OpenAI configurada: {settings.has_openai_key}")
+            print(f"Database: {settings.database_file}")
+            print(f"Model: {settings.chat_model}")
+            print(f"OpenAI configured: {settings.has_openai_key}")
             for table in ["products", "orders", "customers", "policy_sections", "agent_runs"]:
                 count = conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()["n"]
                 print(f"{table}: {count}")
@@ -84,15 +84,15 @@ async def _main(args) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="CLI do agente da Empório da Música.")
-    parser.add_argument("--db", default=None, help="Caminho alternativo do SQLite.")
-    parser.add_argument("--session", default=None, help="ID de sessão para continuar uma conversa.")
-    parser.add_argument("--skip-embeddings", action="store_true", help="Não usa embeddings.")
+    parser = argparse.ArgumentParser(description="Empório da Música agent CLI.")
+    parser.add_argument("--db", default=None, help="Alternative SQLite database path.")
+    parser.add_argument("--session", default=None, help="Session ID to continue a conversation.")
+    parser.add_argument("--skip-embeddings", action="store_true", help="Do not use embeddings.")
     sub = parser.add_subparsers(dest="command", required=True)
-    ask = sub.add_parser("ask", help="Envia uma mensagem única.")
+    ask = sub.add_parser("ask", help="Send a single message.")
     ask.add_argument("message")
-    sub.add_parser("chat", help="Abre um chat interativo no terminal.")
-    sub.add_parser("status", help="Mostra o estado do banco e do modelo.")
+    sub.add_parser("chat", help="Open an interactive terminal chat.")
+    sub.add_parser("status", help="Show database and model status.")
     args = parser.parse_args()
     return asyncio.run(_main(args))
 

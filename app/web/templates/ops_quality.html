@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Qualidade · Empório da Música{% endblock %}
+{% block title %}Quality · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Qualidade dos dados</h1>
-      <p>Anomalias detectadas na ingestão. O agente deve tratar esses casos com cautela.</p>
+      <h1>Data quality</h1>
+      <p>Anomalies detected during ingestion. The agent should handle these cases carefully.</p>
     </div>
-    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+    <a class="btn secondary" href="/ops">Back to dashboard</a>
   </div>
 
   <div class="panel">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Severidade</th><th>Código</th><th>Entidade</th><th>Mensagem</th></tr></thead>
+        <thead><tr><th>Severity</th><th>Code</th><th>Entity</th><th>Message</th></tr></thead>
         <tbody>
           {% for issue in issues %}
             <tr>
@@ -26,7 +26,7 @@
               <td class="small">{{ issue.message }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="4" class="muted">Nenhuma anomalia registrada.</td></tr>
+            <tr><td colspan="4" class="muted">No issues recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>

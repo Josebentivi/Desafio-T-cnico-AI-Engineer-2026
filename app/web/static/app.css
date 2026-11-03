@@ -220,6 +220,7 @@ td.num, th.num { text-align: right; white-space: nowrap; }
 }
 .msg.user .bubble { background: #dcf8c6; border-bottom-right-radius: 4px; }
 .msg.assistant .bubble { background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bubble del { color: var(--muted); }
 .msg.assistant .bubble.streaming::after { content: "▍"; opacity: 0.5; }
 .trace { margin-top: 8px; max-width: min(78%, 720px); }
 .trace summary { color: var(--muted); cursor: pointer; font-size: 0.76rem; }

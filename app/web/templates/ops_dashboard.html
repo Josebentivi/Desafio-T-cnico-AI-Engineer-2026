@@ -1,31 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Painel · Empório da Música{% endblock %}
+{% block title %}Dashboard · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Painel operacional</h1>
-      <p>Visão somente leitura dos dados, políticas e execuções do agente.</p>
+      <h1>Operational dashboard</h1>
+      <p>Read-only view of data, policies, and agent runs.</p>
     </div>
-    <a class="btn secondary" href="/">Abrir chat</a>
+    <a class="btn secondary" href="/">Open chat</a>
   </div>
 
   <div class="cards">
-    <div class="card"><div class="label">Produtos</div><div class="value">{{ counts.products }}</div></div>
-    <div class="card"><div class="label">Pedidos</div><div class="value">{{ counts.orders }}</div></div>
-    <div class="card"><div class="label">Clientes</div><div class="value">{{ counts.customers }}</div></div>
-    <div class="card"><div class="label">Promoções ativas</div><div class="value">{{ counts.promotions }}</div></div>
-    <div class="card"><div class="label">Anomalias</div><div class="value">{{ counts.issues }}</div></div>
-    <div class="card"><div class="label">Execuções</div><div class="value">{{ counts.runs }}</div></div>
+    <div class="card"><div class="label">Products</div><div class="value">{{ counts.products }}</div></div>
+    <div class="card"><div class="label">Orders</div><div class="value">{{ counts.orders }}</div></div>
+    <div class="card"><div class="label">Customers</div><div class="value">{{ counts.customers }}</div></div>
+    <div class="card"><div class="label">Active promotions</div><div class="value">{{ counts.promotions }}</div></div>
+    <div class="card"><div class="label">Data issues</div><div class="value">{{ counts.issues }}</div></div>
+    <div class="card"><div class="label">Runs</div><div class="value">{{ counts.runs }}</div></div>
   </div>
 
   <div class="panel" style="margin-top: 18px;">
     <div class="panel-head">
-      <h2>Execuções recentes</h2>
-      <a class="small" href="/ops/traces">ver todas</a>
+      <h2>Recent runs</h2>
+      <a class="small" href="/ops/traces">view all</a>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Run</th><th>Conversa</th><th>Quando</th><th class="num">Tokens</th><th class="num">Latência</th><th>Status</th></tr></thead>
+        <thead><tr><th>Run</th><th>Conversation</th><th>When</th><th class="num">Tokens</th><th class="num">Latency</th><th>Status</th></tr></thead>
         <tbody>
           {% for run in recent_runs %}
             <tr>
@@ -34,10 +34,10 @@
               <td class="small muted">{{ run.created_at[:19].replace("T", " ") }}</td>
               <td class="num">{{ run.input_tokens + run.output_tokens }}</td>
               <td class="num">{{ run.latency_ms }} ms</td>
-              <td>{% if run.error %}<span class="badge red">erro</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
+              <td>{% if run.error %}<span class="badge red">error</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
             </tr>
           {% else %}
-            <tr><td colspan="6" class="muted">Nenhuma execução registrada.</td></tr>
+            <tr><td colspan="6" class="muted">No runs recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -46,12 +46,12 @@
 
   <div class="panel">
     <div class="panel-head">
-      <h2>Anomalias de dados</h2>
-      <a class="small" href="/ops/quality">ver todas</a>
+      <h2>Data quality issues</h2>
+      <a class="small" href="/ops/quality">view all</a>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Severidade</th><th>Entidade</th><th>Mensagem</th></tr></thead>
+        <thead><tr><th>Severity</th><th>Entity</th><th>Message</th></tr></thead>
         <tbody>
           {% for issue in issues %}
             <tr>
@@ -64,7 +64,7 @@
               <td class="small">{{ issue.message }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="3" class="muted">Nenhuma anomalia registrada.</td></tr>
+            <tr><td colspan="3" class="muted">No issues recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>

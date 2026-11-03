@@ -53,7 +53,7 @@ def build_sections() -> list[dict]:
     sections: list[dict] = []
     current = {
         "section_id": "0",
-        "title": "Identificação da loja",
+        "title": "Store information",
         "page": 1,
         "lines": [],
     }
@@ -90,7 +90,7 @@ def build_sections() -> list[dict]:
 
 def main() -> int:
     if not PDF_PATH.exists():
-        print(f"PDF não encontrado: {PDF_PATH}", file=sys.stderr)
+        print(f"PDF not found: {PDF_PATH}", file=sys.stderr)
         return 1
     sections = build_sections()
     payload = {
@@ -103,7 +103,7 @@ def main() -> int:
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print(f"{len(sections)} seções extraídas para {OUT_PATH}")
+    print(f"{len(sections)} sections extracted to {OUT_PATH}")
     for section in sections:
         print(f"  {section['section_id']:>4}  {section['title']}")
     return 0

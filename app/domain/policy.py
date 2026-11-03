@@ -5,6 +5,7 @@ import sqlite3
 import numpy as np
 
 from app.domain.catalog import fts_query
+from app.domain.search_aliases import expand_policy_query
 from app.llm.embeddings import blob_to_vector, cosine_similarity
 
 
@@ -14,7 +15,7 @@ class PolicyService:
         self.embedding_client = embedding_client
 
     def _fts_search(self, query: str, limit: int) -> list[dict]:
-        fts = fts_query(query)
+        fts = fts_query(expand_policy_query(query))
         if not fts:
             return []
         rows = self.conn.execute(

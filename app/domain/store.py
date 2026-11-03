@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 WEEKDAYS = [
-    "segunda-feira",
-    "terça-feira",
-    "quarta-feira",
-    "quinta-feira",
-    "sexta-feira",
-    "sábado",
-    "domingo",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
 ]
 
 
@@ -49,14 +49,14 @@ def store_status(timezone_name: str = "America/Campo_Grande", now: datetime | No
             break
 
     if is_open:
-        message = "A loja está aberta agora."
+        message = "The store is open now."
     elif next_opening:
         message = (
-            f"A loja está fechada agora. O próximo atendimento é "
-            f"{WEEKDAYS[next_opening.weekday()]}, {next_opening.strftime('%d/%m às %H:%M')}."
+            "The store is closed now. The next opening is "
+            f"{WEEKDAYS[next_opening.weekday()]}, {next_opening.strftime('%d/%m at %H:%M')}."
         )
     else:
-        message = "A loja está fechada agora."
+        message = "The store is closed now."
 
     return {
         "local_time": current.isoformat(timespec="minutes"),
@@ -69,9 +69,9 @@ def store_status(timezone_name: str = "America/Campo_Grande", now: datetime | No
             next_opening.strftime("%d/%m/%Y %H:%M") if next_opening else None
         ),
         "hours": {
-            "monday_to_friday": "09:00 às 18:00",
-            "saturday": "09:00 às 13:00",
-            "sunday_and_holidays": "fechado",
+            "monday_to_friday": "09:00 to 18:00",
+            "saturday": "09:00 to 13:00",
+            "sunday_and_holidays": "closed",
         },
-        "holiday_note": "Feriados não estão modelados; domingos e feriados seguem fechados.",
+        "holiday_note": "Holidays are not modeled; Sundays and holidays are treated as closed.",
     }

@@ -29,7 +29,7 @@ class FakeLLM(LLMClient):
     ) -> AsyncIterator[StreamEvent]:
         self.calls.append(list(input_items))
         if not self.turns:
-            turn = FakeTurn(text="Não tenho mais nada a responder.")
+            turn = FakeTurn(text="I have nothing else to answer.")
         else:
             turn = self.turns.pop(0)
 

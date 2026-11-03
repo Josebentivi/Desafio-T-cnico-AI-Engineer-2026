@@ -3,17 +3,17 @@
 {% block content %}
   <div class="page-head">
     <div>
-      <h1>Traces do agente</h1>
-      <p>Execuções, ferramentas chamadas, tokens e latência.</p>
+      <h1>Agent traces</h1>
+      <p>Runs, tools called, tokens, and latency.</p>
     </div>
-    <a class="btn secondary" href="/ops">Voltar ao painel</a>
+    <a class="btn secondary" href="/ops">Back to dashboard</a>
   </div>
 
   <div class="panel">
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Run</th><th>Conversa</th><th>Quando</th><th>Modelo</th><th>Effort</th><th class="num">Tokens</th><th class="num">Latência</th><th class="num">Custo</th><th class="num">Tools</th><th>Status</th></tr>
+          <tr><th>Run</th><th>Conversation</th><th>When</th><th>Model</th><th>Effort</th><th class="num">Tokens</th><th class="num">Latency</th><th class="num">Cost</th><th class="num">Tools</th><th>Status</th></tr>
         </thead>
         <tbody>
           {% for run in runs %}
@@ -27,10 +27,10 @@
               <td class="num">{{ run.latency_ms }} ms</td>
               <td class="num">US$ {{ "%.5f"|format(run.estimated_cost_usd) }}</td>
               <td class="num">{{ run.tool_count }}</td>
-              <td>{% if run.error %}<span class="badge red">erro</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
+              <td>{% if run.error %}<span class="badge red">error</span>{% else %}<span class="badge green">ok</span>{% endif %}</td>
             </tr>
           {% else %}
-            <tr><td colspan="10" class="muted">Nenhuma execução registrada.</td></tr>
+            <tr><td colspan="10" class="muted">No runs recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>

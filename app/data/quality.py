@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import UTC, date, datetime
 
+from app.domain.catalog import CATEGORY_LABELS_EN
 from app.domain.money import format_brl
 
 
@@ -40,7 +41,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
                 "discontinued_with_stock",
                 "product",
                 product["product_id"],
-                f"{product['name']} está descontinuado, mas tem estoque {stock}.",
+                f"{product['name']} is discontinued but has stock {stock}.",
             )
         if status == "active" and stock == 0:
             _issue(
@@ -49,7 +50,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
                 "active_without_stock",
                 "product",
                 product["product_id"],
-                f"{product['name']} está ativo, mas sem estoque.",
+                f"{product['name']} is active but has no stock.",
             )
         if status == "coming_soon" and stock > 0:
             _issue(
@@ -58,7 +59,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
                 "coming_soon_with_stock",
                 "product",
                 product["product_id"],
-                f"{product['name']} está como coming_soon, mas tem estoque {stock}.",
+                f"{product['name']} is coming_soon but has stock {stock}.",
             )
 
     for row in conn.execute(
@@ -76,7 +77,9 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
             "empty_category",
             "category",
             row["category_id"],
-            "Categoria '{}' não tem produtos no CSV.".format(row["name"]),
+            "Category '{}' has no products in the CSV.".format(
+                CATEGORY_LABELS_EN.get(row["name"], row["name"])
+            ),
         )
 
     for row in conn.execute(
@@ -98,8 +101,8 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
                 "order",
                 row["order_id"],
                 (
-                    f"Pedido {row['order_id']}: total {format_brl(row['total_cents'])} "
-                    f"difere dos itens em {format_brl(abs(diff))}."
+                    f"Order {row['order_id']}: total {format_brl(row['total_cents'])} "
+                    f"differs from the line-item sum by {format_brl(abs(diff))}."
                 ),
             )
 
@@ -118,7 +121,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
             "non_active_product_in_order",
             "order",
             row["order_id"],
-            f"Pedido {row['order_id']} contém {row['name']} ({row['status']}).",
+            f"Order {row['order_id']} contains {row['name']} ({row['status']}).",
         )
 
     for row in conn.execute(
@@ -139,7 +142,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
                 "shipped_overdue",
                 "order",
                 row["order_id"],
-                f"Pedido {row['order_id']} está como shipped, mas a entrega estimada já passou.",
+                f"Order {row['order_id']} is marked shipped but the estimated delivery date has passed.",
             )
 
     for row in conn.execute(
@@ -157,7 +160,7 @@ def run_quality_checks(conn: sqlite3.Connection, today: date | None = None) -> l
             "duplicate_active_promotion",
             "product",
             row["product_id"],
-            f"Produto {row['product_id']} tem {row['total']} promoções ativas.",
+            f"Product {row['product_id']} has {row['total']} active promotions.",
         )
 
     conn.commit()

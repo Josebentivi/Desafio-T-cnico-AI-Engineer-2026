@@ -21,8 +21,8 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "search_products",
         "description": (
-            "Busca produtos do catálogo por texto, categoria, faixa de preço e disponibilidade. "
-            "Retorna uma lista curta com id, nome, categoria, preço, status e promoção ativa."
+            "Search the catalog by text, category, price range, and availability. "
+            "Returns a short list with id, name, category, price, status, and active promotion."
         ),
         "strict": True,
         "parameters": {
@@ -30,27 +30,27 @@ TOOL_SPECS: list[dict] = [
             "properties": {
                 "query": {
                     **_nullable("string"),
-                    "description": "Texto livre para buscar no nome, descrição e especificações.",
+                    "description": "Free-text search over product name, description, and specifications.",
                 },
                 "category": {
                     **_nullable("string"),
-                    "description": "Nome ou id da categoria, por exemplo 'Violões' ou '5'.",
+                    "description": "Category name or id, for example 'Acoustic guitars' or '5'.",
                 },
                 "min_price_brl": {
                     **_nullable("number"),
-                    "description": "Preço mínimo em reais.",
+                    "description": "Minimum price in Brazilian reais.",
                 },
                 "max_price_brl": {
                     **_nullable("number"),
-                    "description": "Preço máximo em reais.",
+                    "description": "Maximum price in Brazilian reais.",
                 },
                 "only_available": {
                     "type": "boolean",
-                    "description": "Se verdadeiro, retorna apenas produtos ativos com estoque.",
+                    "description": "If true, return only active products with stock.",
                 },
                 "limit": {
                     "type": "integer",
-                    "description": "Quantidade máxima de resultados, entre 1 e 20.",
+                    "description": "Maximum number of results, between 1 and 20.",
                 },
             },
             "required": [
@@ -68,14 +68,14 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "get_product",
         "description": (
-            "Retorna detalhes de um produto específico: preço, estoque, status, specs, "
-            "promoção ativa e opções de pagamento."
+            "Return details for a specific product: price, stock, status, specs, active promotion, "
+            "and payment options."
         ),
         "strict": True,
         "parameters": {
             "type": "object",
             "properties": {
-                "product_id": {"type": "integer", "description": "ID do produto."},
+                "product_id": {"type": "integer", "description": "Product ID."},
             },
             "required": ["product_id"],
             "additionalProperties": False,
@@ -85,8 +85,8 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "get_active_promotions",
         "description": (
-            "Lista promoções ativas. Se product_id for informado, filtra por produto. "
-            "Retorna preço original, percentual e preço promocional."
+            "List active promotions. If product_id is provided, filter by product. "
+            "Returns original price, discount percentage, and promotional price."
         ),
         "strict": True,
         "parameters": {
@@ -94,7 +94,7 @@ TOOL_SPECS: list[dict] = [
             "properties": {
                 "product_id": {
                     **_nullable("integer"),
-                    "description": "ID do produto ou null para listar todas as promoções ativas.",
+                    "description": "Product ID, or null to list all active promotions.",
                 },
             },
             "required": ["product_id"],
@@ -105,17 +105,17 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "get_order",
         "description": (
-            "Consulta um pedido pelo ID. Exige também um dado do cliente (nome, telefone ou e-mail) "
-            "para confirmar a identidade. Retorna status, itens, total, pagamento e rastreio."
+            "Look up an order by ID. Also requires a customer identifier (name, phone, or email) "
+            "to verify identity. Returns status, items, total, payment, and tracking."
         ),
         "strict": True,
         "parameters": {
             "type": "object",
             "properties": {
-                "order_id": {"type": "integer", "description": "Número do pedido."},
+                "order_id": {"type": "integer", "description": "Order number."},
                 "customer_verifier": {
                     "type": "string",
-                    "description": "Nome, telefone ou e-mail do cliente usado no pedido.",
+                    "description": "Customer name, phone, or email used on the order.",
                 },
             },
             "required": ["order_id", "customer_verifier"],
@@ -126,8 +126,8 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "search_policy",
         "description": (
-            "Busca seções do manual de políticas da loja. Use para trocas, devoluções, garantia, "
-            "pagamento, frete, promoções, horários, privacidade e tom de voz."
+            "Search the store policy manual. Use it for returns, exchanges, warranty, payment, "
+            "shipping, promotions, hours, privacy, and tone of voice."
         ),
         "strict": True,
         "parameters": {
@@ -135,11 +135,11 @@ TOOL_SPECS: list[dict] = [
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Dúvida ou termos de busca, em português.",
+                    "description": "Question or search terms, in English or Portuguese.",
                 },
                 "top_k": {
                     "type": "integer",
-                    "description": "Quantidade de seções a retornar, entre 1 e 5.",
+                    "description": "Number of sections to return, between 1 and 5.",
                 },
             },
             "required": ["query", "top_k"],
@@ -150,7 +150,7 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "get_store_status",
         "description": (
-            "Retorna o horário local da loja, se está aberta agora e quando ocorre o próximo atendimento."
+            "Return the store's local time, whether it is open now, and when the next opening is."
         ),
         "strict": True,
         "parameters": {
@@ -164,15 +164,15 @@ TOOL_SPECS: list[dict] = [
         "type": "function",
         "name": "get_shipping_estimate",
         "description": (
-            "Aplica a regra de frete para a cidade e o total do pedido. Para fora de Campo Grande, "
-            "informa que é necessário o CEP para cotar PAC, SEDEX ou Jadlog."
+            "Apply the shipping rule for a city and order total. Outside Campo Grande, explain that "
+            "the postal code (CEP) is required to quote PAC, SEDEX, or Jadlog."
         ),
         "strict": True,
         "parameters": {
             "type": "object",
             "properties": {
-                "city": {"type": "string", "description": "Cidade de entrega."},
-                "total_brl": {"type": "number", "description": "Total do pedido em reais."},
+                "city": {"type": "string", "description": "Delivery city."},
+                "total_brl": {"type": "number", "description": "Order total in Brazilian reais."},
             },
             "required": ["city", "total_brl"],
             "additionalProperties": False,
@@ -209,7 +209,7 @@ class Toolbox:
         if name == "get_product":
             product = self.catalog.get_product(int(arguments["product_id"]))
             if product is None:
-                return {"found": False, "message": "Produto não encontrado no catálogo."}
+                return {"found": False, "message": "Product not found in the catalog."}
             return {"found": True, "product": product}
         if name == "get_active_promotions":
             product_id = arguments.get("product_id")
@@ -233,7 +233,7 @@ class Toolbox:
             return shipping_estimate(
                 str(arguments["city"]), parse_brl_to_cents(arguments["total_brl"])
             )
-        return {"error": f"Ferramenta desconhecida: {name}"}
+        return {"error": f"Unknown tool: {name}"}
 
 
 def parse_arguments(raw: str) -> dict:

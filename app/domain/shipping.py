@@ -14,20 +14,20 @@ def shipping_estimate(city: str, total_cents: int) -> dict:
             "free_shipping": free,
             "fee_cents": fee_cents,
             "fee_brl": format_brl(fee_cents),
-            "eta": "1 a 3 dias úteis",
-            "note": "Entrega por motoboy próprio; o cliente é contactado antes da entrega.",
+            "eta": "1 to 3 business days",
+            "note": "Delivered by the store's own courier; the customer is contacted before delivery.",
         }
     return {
-        "region": "fora_campo_grande",
+        "region": "outside_campo_grande",
         "city": city,
         "requires_cep": True,
         "modalities": [
-            {"name": "PAC (Correios)", "eta": "5 a 12 dias úteis"},
-            {"name": "SEDEX (Correios)", "eta": "2 a 5 dias úteis"},
-            {"name": "Jadlog (.package)", "eta": "3 a 8 dias úteis"},
+            {"name": "PAC (Correios)", "eta": "5 to 12 business days"},
+            {"name": "SEDEX (Correios)", "eta": "2 to 5 business days"},
+            {"name": "Jadlog (.package)", "eta": "3 to 8 business days"},
         ],
         "note": (
-            "O frete é calculado pelo CEP, peso e dimensões. "
-            "Instrumentos de grande porte podem exigir cotação individual."
+            "Shipping is calculated from the postal code, weight, and dimensions. "
+            "Large instruments may require an individual quote."
         ),
     }

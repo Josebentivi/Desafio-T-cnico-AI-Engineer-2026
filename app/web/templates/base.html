@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,15 +10,15 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/">Empório da Música <span>atendimento</span></a>
+    <a class="brand" href="/">Empório da Música <span>support</span></a>
     <nav>
       <a href="/" class="{{ 'active' if active_nav|default('') == 'chat' else '' }}">Chat</a>
-      <a href="/ops" class="{{ 'active' if active_nav|default('') == 'dashboard' else '' }}">Painel</a>
-      <a href="/ops/catalog" class="{{ 'active' if active_nav|default('') == 'catalog' else '' }}">Catálogo</a>
-      <a href="/ops/orders" class="{{ 'active' if active_nav|default('') == 'orders' else '' }}">Pedidos</a>
+      <a href="/ops" class="{{ 'active' if active_nav|default('') == 'dashboard' else '' }}">Dashboard</a>
+      <a href="/ops/catalog" class="{{ 'active' if active_nav|default('') == 'catalog' else '' }}">Catalog</a>
+      <a href="/ops/orders" class="{{ 'active' if active_nav|default('') == 'orders' else '' }}">Orders</a>
       <a href="/ops/traces" class="{{ 'active' if active_nav|default('') == 'traces' else '' }}">Traces</a>
-      <a href="/ops/policy" class="{{ 'active' if active_nav|default('') == 'policy' else '' }}">Políticas</a>
-      <a href="/ops/quality" class="{{ 'active' if active_nav|default('') == 'quality' else '' }}">Qualidade</a>
+      <a href="/ops/policy" class="{{ 'active' if active_nav|default('') == 'policy' else '' }}">Policies</a>
+      <a href="/ops/quality" class="{{ 'active' if active_nav|default('') == 'quality' else '' }}">Quality</a>
     </nav>
   </header>
   <main class="{% block main_class %}container{% endblock %}">

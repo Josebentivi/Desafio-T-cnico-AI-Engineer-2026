@@ -35,6 +35,28 @@ def test_catalog_search_filters_and_availability(conn):
         assert product["availability"] == "available"
 
 
+def test_catalog_english_query_and_category_aliases(conn):
+    catalog = CatalogService(conn)
+
+    acoustic = catalog.search(query="acoustic guitar", only_available=True, limit=20)
+    assert any(product["category"] == "Violões" for product in acoustic)
+
+    ukuleles = catalog.search(query="ukulele", only_available=True, limit=20)
+    assert any(product["category"] == "Ukuleles" for product in ukuleles)
+
+    category = catalog.search(category="Acoustic guitars", only_available=True, limit=20)
+    assert category
+    assert all(product["category"] == "Violões" for product in category)
+    assert all(product["category_en"] == "Acoustic guitars" for product in category)
+
+    categories = catalog.list_categories()
+    assert any(category["name_en"] == "Acoustic guitars" for category in categories)
+
+    basses = catalog.search(category="basses", only_available=True, limit=20)
+    assert basses
+    assert all(product["category"] == "Baixos" for product in basses)
+
+
 def test_catalog_status_traps(conn):
     catalog = CatalogService(conn)
     discontinued = catalog.get_product(136)
@@ -61,6 +83,7 @@ def test_active_promotion_price_and_pix_rules(conn):
     regular = catalog.get_product(81)
     assert regular["promotion"] is None
     assert regular["pix_price_brl"] == "R$ 569,91"
+    assert regular["status_label"] == "active"
 
 
 def test_order_verification(conn):
@@ -72,9 +95,9 @@ def test_order_verification(conn):
     assert found["status"] == "delivered"
     assert found["items"][0]["product_id"] == 130
 
-    missing = orders.get_order(3, "Outra Pessoa")
+    missing = orders.get_order(3, "Another Person")
     assert missing["found"] is False
-    assert "não encontrado" in missing["message"]
+    assert "not found" in missing["message"]
 
 
 def test_order_masks_pii_in_list(conn):
@@ -94,7 +117,7 @@ def test_shipping_rules():
     assert paid["fee_cents"] == 3500
 
     outside = shipping_estimate("Dourados", 80000)
-    assert outside["region"] == "fora_campo_grande"
+    assert outside["region"] == "outside_campo_grande"
     assert outside["requires_cep"] is True
     assert len(outside["modalities"]) == 3
 

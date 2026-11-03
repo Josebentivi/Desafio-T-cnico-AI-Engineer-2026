@@ -24,7 +24,7 @@ def _as_dict(item) -> dict:
 class OpenAIResponsesClient(LLMClient):
     def __init__(self, settings: Settings):
         if not settings.has_openai_key:
-            raise ValueError("OPENAI_API_KEY não configurada")
+            raise ValueError("OPENAI_API_KEY is not configured")
         kwargs = {"api_key": settings.openai_api_key}
         if settings.openai_base_url:
             kwargs["base_url"] = settings.openai_base_url
@@ -81,7 +81,7 @@ class OpenAIResponsesClient(LLMClient):
                 elif event_type == "response.completed":
                     response = getattr(event, "response", None)
                     if response is None:
-                        raise LLMError("Resposta concluída sem objeto de resposta")
+                        raise LLMError("Response completed without a response object")
                     yield StreamEvent(type="completed", response=self._to_model_response(response))
                 elif event_type in {"response.failed", "error"}:
                     message = getattr(event, "message", "") or getattr(event, "error", "")

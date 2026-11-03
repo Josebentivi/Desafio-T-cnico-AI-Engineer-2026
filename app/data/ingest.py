@@ -314,7 +314,7 @@ async def ingest_all(
                 f"{settings.embedding_model}:{settings.embedding_dimensions}",
             )
         except Exception as exc:
-            print(f"Aviso: não foi possível gerar embeddings ({exc}). Usando FTS5.", file=sys.stderr)
+            print(f"Warning: could not generate embeddings ({exc}). Falling back to FTS5.", file=sys.stderr)
             conn.rollback()
 
     issues = run_quality_checks(conn)
@@ -336,13 +336,15 @@ async def ingest_all(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Ingere os CSVs e as políticas no SQLite.")
-    parser.add_argument("--db", default=None, help="Caminho do banco SQLite.")
-    parser.add_argument("--reset", action="store_true", help="Recria o banco do zero.")
+    parser = argparse.ArgumentParser(
+        description="Ingest the CSV files and policy sections into SQLite."
+    )
+    parser.add_argument("--db", default=None, help="SQLite database path.")
+    parser.add_argument("--reset", action="store_true", help="Recreate the database from scratch.")
     parser.add_argument(
         "--skip-embeddings",
         action="store_true",
-        help="Não chama a API de embeddings; usa apenas FTS5.",
+        help="Do not call the embeddings API; use FTS5 only.",
     )
     args = parser.parse_args()
 
@@ -368,10 +370,10 @@ def main() -> int:
     finally:
         conn.close()
 
-    print("Ingestão concluída.")
+    print("Ingestion complete.")
     print(json.dumps(summary["counts"], ensure_ascii=False, indent=2))
-    print(f"Embeddings gerados: {summary['embedded']}")
-    print(f"Anomalias registradas: {len(summary['issues'])}")
+    print(f"Embeddings generated: {summary['embedded']}")
+    print(f"Data quality issues recorded: {len(summary['issues'])}")
     return 0
 
 
