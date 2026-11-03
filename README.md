@@ -84,7 +84,7 @@ ruff check app scripts tests
 node --check app/web/static/chat.js
 ```
 
-The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. There are **44 tests** covering ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes.
+The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. There are **46 tests** covering ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes.
 
 ### 5. Re-extract the manual (optional)
 
@@ -167,6 +167,7 @@ The source data and policy manual are in Portuguese, but customers write in Engl
   - `acoustic guitar` / `classical guitar` → `violão`
   - `guitar` → `guitarra` / `violão`
   - `bass` → `baixo`
+  - `double bass` / `upright bass` → `contrabaixo` (orchestral strings)
   - `drums` → `bateria`
   - `keyboard` / `piano` → `teclado` / `piano`
   - `return` / `refund` → `devolução` / `reembolso`
@@ -256,7 +257,7 @@ data/
   *.csv                    # operational data (Portuguese)
   políticas_da_loja.pdf    # policy manual (Portuguese)
   policy_sections.json     # extracted, reviewed sections
-tests/                     # 44 tests
+tests/                     # 46 tests
 scripts/
   extract_policy.py        # PDF -> sections
 examples/                  # English example conversations

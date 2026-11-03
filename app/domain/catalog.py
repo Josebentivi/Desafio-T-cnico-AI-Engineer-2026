@@ -159,11 +159,23 @@ class CatalogService:
         params.append(sql_limit)
         rows = list(self.conn.execute(sql, params))
 
-        if diversify:
+        if diversify and rows:
             grouped: dict[int, list] = {}
             for row in rows:
                 grouped.setdefault(row["category_id"], []).append(row)
-            ordered = []
+
+            first = rows[0]
+            ordered = [first]
+            grouped[first["category_id"]].pop(0)
+
+            if len(ordered) < limit:
+                for category_id in sorted(grouped):
+                    if category_id == first["category_id"] or not grouped[category_id]:
+                        continue
+                    ordered.append(grouped[category_id].pop(0))
+                    if len(ordered) >= limit:
+                        break
+
             while len(ordered) < limit:
                 added = False
                 for category_id in sorted(grouped):

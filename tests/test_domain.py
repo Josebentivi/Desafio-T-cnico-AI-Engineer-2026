@@ -94,6 +94,26 @@ def test_catalog_compound_and_multi_category_queries(conn):
         assert expected.issubset({product["category_id"] for product in results})
 
 
+def test_catalog_specific_product_query_preserves_relevance(conn):
+    catalog = CatalogService(conn)
+    expected = {
+        "Yamaha C40 guitar": 81,
+        "Yamaha C70 guitar": 82,
+        "Taylor 110e guitar": 94,
+    }
+    for query, product_id in expected.items():
+        results = catalog.search(query=query, only_available=True, limit=1)
+        assert results
+        assert results[0]["product_id"] == product_id
+
+
+def test_catalog_upright_and_double_bass_do_not_return_electric_basses(conn):
+    catalog = CatalogService(conn)
+    for query in ["double bass", "upright bass"]:
+        assert catalog.search(query=query, only_available=True, limit=5) == []
+        assert catalog.search(category=query, only_available=True, limit=5) == []
+
+
 def test_catalog_status_traps(conn):
     catalog = CatalogService(conn)
     discontinued = catalog.get_product(136)
