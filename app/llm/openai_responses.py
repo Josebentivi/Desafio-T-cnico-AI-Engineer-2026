@@ -5,14 +5,23 @@ from collections.abc import AsyncIterator
 from openai import AsyncOpenAI
 
 from app.config import Settings
-from app.llm.base import FunctionCall, LLMClient, LLMError, ModelResponse, StreamEvent
+from app.llm.base import (
+    FunctionCall,
+    LLMClient,
+    LLMError,
+    ModelResponse,
+    StreamEvent,
+    normalize_api_item,
+)
 
 
 def _dump(value):
     if hasattr(value, "model_dump"):
-        return value.model_dump()
+        return normalize_api_item(
+            value.model_dump(mode="json", by_alias=True, exclude_none=True)
+        )
     if isinstance(value, dict):
-        return value
+        return normalize_api_item(value)
     return value
 
 

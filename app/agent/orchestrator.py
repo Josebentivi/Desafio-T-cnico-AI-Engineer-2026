@@ -11,7 +11,7 @@ from app.agent.guardrails import grounding_warnings, validate_user_message
 from app.agent.prompts import SYSTEM_PROMPT
 from app.agent.tools import TOOL_SPECS, Toolbox, parse_arguments
 from app.config import Settings
-from app.llm.base import LLMClient, LLMError
+from app.llm.base import LLMClient, LLMError, normalize_api_item
 
 INPUT_COST_PER_MTOK = 0.10
 OUTPUT_COST_PER_MTOK = 0.50
@@ -90,12 +90,15 @@ class Agent:
             value = json.loads(row["state_json"])
         except json.JSONDecodeError:
             return []
-        return value if isinstance(value, list) else []
+        if not isinstance(value, list):
+            return []
+        return [normalize_api_item(item) for item in value]
 
     def _save_state(self, session_id: str, state: list[dict]) -> None:
+        cleaned = [normalize_api_item(item) for item in state]
         self.conn.execute(
             "UPDATE sessions SET state_json = ?, updated_at = ? WHERE session_id = ?",
-            (json.dumps(state, ensure_ascii=False, default=str), _now(), session_id),
+            (json.dumps(cleaned, ensure_ascii=False, default=str), _now(), session_id),
         )
         self.conn.commit()
 

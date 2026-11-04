@@ -33,6 +33,23 @@ class LLMError(RuntimeError):
     pass
 
 
+def normalize_api_item(value):
+    """Remove SDK-only aliases and null fields before sending items back to the API."""
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, item in value.items():
+            if item is None:
+                continue
+            if key == "async_":
+                cleaned["async"] = normalize_api_item(item)
+            else:
+                cleaned[key] = normalize_api_item(item)
+        return cleaned
+    if isinstance(value, list):
+        return [normalize_api_item(item) for item in value]
+    return value
+
+
 class LLMClient(Protocol):
     async def stream_response(
         self,
