@@ -2,9 +2,11 @@
 
 Text-message customer service agent for the fictional **Empório da Música**, a musical instrument store in Campo Grande/MS, Brazil. This project was built for Artefact's AI Engineer take-home challenge.
 
-The application runs in **Brazilian Portuguese (pt-BR)**: the agent's replies, web interface, CLI, validation, and runtime messages. The source CSVs and policy manual are also in Portuguese. **This README, explanatory documentation, and documented example conversations remain in English** for reviewers; the examples are translations of the Portuguese runtime. Product names, customer names, technical identifiers, and policy section numbers retain their source spelling.
+Repository: https://github.com/Josebentivi/Desafio-T-cnico-AI-Engineer-2026
 
-The agent checks the catalog and orders in SQLite, retrieves rules from the policy manual, and only states a price, stock level, deadline, or order status after calling a tool. The app includes a streaming chat and a read-only operational panel with catalog, orders, policies, data quality, and agent traces.
+The application runs in **Brazilian Portuguese (pt-BR)**: the agent's replies, web interface, CLI, validation, and runtime messages. The source CSVs and policy manual are also in Portuguese. **This README, explanatory documentation, and documented example conversations remain in English** for reviewers; the examples are reviewer-facing translations or illustrations of the Portuguese runtime. Product names, customer names, technical identifiers, and policy section numbers retain their source spelling.
+
+The agent can check the catalog and orders in SQLite and retrieve rules from the policy manual. Its prompt requires a tool lookup before stating a price, stock level, deadline, or order status; a separate guardrail records warnings for ungrounded currency values. The app includes a streaming chat and a read-only operational panel with catalog, orders, policies, data quality, and agent traces.
 
 ## Stack
 
@@ -54,7 +56,7 @@ Without an OpenAI key, or to avoid embedding calls:
 python -m app.data.ingest --reset --skip-embeddings
 ```
 
-In that mode, policy retrieval uses FTS5 only. The chat still works, but without semantic search.
+In that mode, policy retrieval uses FTS5 only. With an OpenAI key configured, the chat can still use the model without semantic search. Without a key, ingestion and the operational panel work, but the chat cannot generate model responses until a key is configured.
 
 ### 2. Server
 
@@ -223,7 +225,7 @@ Beyond the prompt:
 - **Status beats stock.** Product 136 is `discontinued` with stock 13; 96 is `active` with stock 0; 130 is `coming_soon` with stock 2 and appears in orders. Availability is derived from status + stock, never from stock alone.
 - **Active promotions.** Only 4 of 25 rows have `is_active = 1`. Duplicate rows for products 93, 96, and 99 are inactive. If more than one promotion is active, the highest discount is used.
 - **Order total is authoritative.** Orders 3 and 20 have totals lower than the line-item sum. The system does not “fix” the data; it records the mismatch in `data_quality_issues` and uses `orders.total_brl` in answers.
-- **PII.** Phone numbers and emails are masked in lists and traces. The panel has no login and should run on `127.0.0.1`; do not expose it publicly.
+- **Customer data.** The provided CSVs contain customer names and contact fields. Order list and detail views mask phone numbers and emails, but conversation history and tool-call arguments can contain customer-supplied identifiers and are stored and shown in traces without general redaction. The panel has no login and should run on `127.0.0.1`; do not expose the running application publicly.
 - **Money and installments.** Values are converted to cents with `Decimal` and `ROUND_HALF_UP`. The 5% PIX discount does not apply to promotions. The manual has an inconsistency between the table (minimum installment of R$ 100) and section 3.1 (4–6x with a minimum of R$ 80); the implementation follows section 3.1 and documents the choice.
 - **Dates.** Orders have a purchase date and an estimated delivery date, but not the actual delivery date. For returns, the agent uses the estimate cautiously or asks the customer.
 - **No CEP/address.** Customers have only a city. Shipping in Campo Grande follows the R$ 500/R$ 35 rule; outside the region, the agent explains that the CEP is needed to quote PAC, SEDEX, or Jadlog.
@@ -288,7 +290,7 @@ examples/                  # English example conversations
 
 ## Example conversations
 
-These files are English reviewer-facing translations. The running assistant responds in Brazilian Portuguese.
+These files are English reviewer-facing translations or illustrations. The running assistant responds in Brazilian Portuguese. Example 2 is a translated transcript of an actual local run with live catalog lookups; the other examples illustrate the intended interactions and tool use.
 
 - `examples/01-catalog.md` — acoustic guitars under R$ 1,000
 - `examples/02-price-stock.md` — Yamaha C40 price, stock, and PIX
@@ -310,24 +312,24 @@ These files are English reviewer-facing translations. The running assistant resp
 
 ## AI assistant disclosure
 
-This project was developed with support from **OpenCode**, initially using **`deepseek-v4.1-flash`**. The interface redesign and Brazilian Portuguese runtime localization also used OpenCode with **`gpt-6.1-sol`**. The assistant was used to:
+This project was developed with support from **OpenCode**. The assistant was used to:
 
 - discuss architecture and trade-offs;
 - generate the project scaffold and templates;
 - implement ingestion, domain services, tools, the agent loop, SSE, and the panel;
 - write and run tests;
 - review data and policies;
-- write this documentation;
-- convert the project's user-facing text, documentation, and examples to English.
-- redesign the responsive interface and localize the runtime back to Brazilian Portuguese while retaining English documentation.
+- write and review the English documentation and example conversations;
+- redesign the responsive interface and localize the application runtime to Brazilian Portuguese;
+- diagnose and fix integration problems and verify the resulting behavior.
 
-Decisions were reviewed and validated with local tests. No API keys, real personal data, or secrets were committed. This disclosure is included as requested in the challenge brief.
+Decisions were reviewed and validated with local tests. No API keys or secrets were intentionally committed. The repository includes the customer data supplied with the challenge; it contains names and contact fields, and publishing the repository makes those CSVs available to readers. This disclosure is included as requested in the challenge brief.
 
 ## Documented assumptions
 
 - The CSV is the available catalog for the prototype, even though the manual mentions 300+ instruments.
 - Section 3.1 of the manual prevails over the installment table when they conflict.
 - `orders.total_brl` is the source of truth, even when it differs from the line-item sum.
-- For returns, the estimated delivery date is used as a reference when the actual date is unavailable; the agent should confirm with the customer.
+- Orders do not contain an actual delivery date. An estimated date is not proof of receipt; the agent should ask the customer to confirm the actual date when assessing a return.
 - The policy closes the store on Sundays and holidays. Sundays are included in the opening-time calculation; a holiday calendar is not modeled, so holiday openings must be confirmed with the team.
 - The agent, interface, and CLI use Brazilian Portuguese. This README and explanatory documentation, including reviewer-facing example translations, remain in English. Source names and policy text retain their original spelling.

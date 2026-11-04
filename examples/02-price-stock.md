@@ -1,19 +1,11 @@
-# Example 2 — Price, stock, and PIX
+# Example 2 — Live price, stock, and PIX lookup
 
-> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+> English translation of an actual local conversation with the OpenAI-backed agent. The running application responds in Brazilian Portuguese (pt-BR).
 
-**Customer:** How much is the Yamaha C40? Do you have it in stock?
+**Customer:** How much is the Yamaha C40?
 
-**Assistant:** The **Yamaha C40 Nylon Natural** is **R$ 599,90**, and we have **12 units** in stock.
+**Assistant:** The Yamaha C40 Nylon Natural costs **R$ 599,90**. With PIX, it is **R$ 569,91**. We have 12 in stock.
 
-It is active and has no current promotion. With the **5% PIX discount**, it comes to **R$ 569,91**. We also accept debit card, boleto, and credit card, subject to the minimum installment.
+**Observed lookups:** `search_products` followed by `get_product` for the matching catalog item, Yamaha C40 Nylon Natural (`product_id=81`). The response used the database price and stock and the store's calculated 5% PIX discount.
 
-Would you like more details about its specifications or payment options?
-
-**Internal lookup**
-
-```text
-get_product(product_id=81)
-```
-
-The price and stock came from the database. The PIX value was calculated by the store rule and does not stack with promotions.
+This is a translation of the observed reply, rather than an assertion that the model will produce identical wording on every run. Prices, promotions, and availability reflect the supplied dataset at the time of the run.
