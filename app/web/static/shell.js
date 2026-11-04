@@ -7,7 +7,7 @@
   function setNavigation(open, restoreFocus = true) {
     document.body.classList.toggle("nav-open", open);
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? "Fechar navegação" : "Abrir navegação");
+    toggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
     backdrop.hidden = !open;
     navigation.inert = mobile.matches && !open;
     document.querySelector(".workspace").inert = open;
@@ -41,7 +41,7 @@
     history.addEventListener("click", () => {
       const open = document.querySelector(".chat-sidebar").classList.toggle("history-open");
       history.setAttribute("aria-expanded", String(open));
-      history.setAttribute("aria-label", open ? "Ocultar histórico de conversas" : "Mostrar histórico de conversas");
+      history.setAttribute("aria-label", open ? "Hide conversation history" : "Show conversation history");
     });
   }
 })();

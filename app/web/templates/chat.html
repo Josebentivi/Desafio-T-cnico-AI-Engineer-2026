@@ -1,41 +1,41 @@
 {% extends "base.html" %}
 {% from 'macros.html' import message as chat_message with context %}
-{% block title %}Atendimento · Empório da Música{% endblock %}
+{% block title %}Support · Empório da Música{% endblock %}
 {% block main_class %}chat-shell{% endblock %}
 {% block content %}
-  <aside class="chat-sidebar" aria-label="Histórico de conversas">
+  <aside class="chat-sidebar" aria-label="Conversation history">
     <div class="history-head">
-      <div class="spread"><h2>Suas conversas</h2><button type="button" class="icon-button history-toggle" aria-expanded="false" aria-controls="session-list" aria-label="Mostrar histórico de conversas">{{ icon('chevron') }}</button></div>
-      <form method="post" action="/sessions/new"><button class="btn new-chat" type="submit">{{ icon('plus') }}Nova conversa</button></form>
+      <div class="spread"><h2>Your conversations</h2><button type="button" class="icon-button history-toggle" aria-expanded="false" aria-controls="session-list" aria-label="Show conversation history">{{ icon('chevron') }}</button></div>
+      <form method="post" action="/sessions/new"><button class="btn new-chat" type="submit">{{ icon('plus') }}New conversation</button></form>
     </div>
     <div class="session-list" id="session-list">
-      <div class="eyebrow">Histórico recente</div>
+      <div class="eyebrow">Recent history</div>
       {% for item in sessions %}
         <a class="session-link {{ 'active' if item.session_id == session_id else '' }}" href="/sessions/{{ item.session_id }}" {% if item.session_id == session_id %}aria-current="true"{% endif %}>
           {{ icon('chat') }}<span class="session-text"><span class="title">{{ item.title }}</span><span class="time">{{ item.updated_at|datetime_br }}</span></span>
         </a>
-      {% else %}<p class="muted small">Sua próxima conversa começa aqui.</p>{% endfor %}
+      {% else %}<p class="muted small">Your next conversation starts here.</p>{% endfor %}
     </div>
-    <div class="history-note">{{ icon('book') }}<p>Boas escolhas começam<br>com uma boa conversa.</p></div>
+    <div class="history-note">{{ icon('book') }}<p>Great choices start<br>with a good conversation.</p></div>
   </aside>
 
-  <section class="chat-main" aria-label="Atendimento virtual">
+  <section class="chat-main" aria-label="Virtual support">
     <header class="chat-head">
-      <div class="row"><div class="assistant-mark">{{ icon('music') }}</div><div><h1>Vamos falar de música?</h1><div class="small muted">Seu assistente do Empório da Música</div></div></div>
-      <span class="assistant-status" id="assistant-status" role="status"><span class="status-dot"></span><span id="status-text">Pronto para ajudar</span></span>
+      <div class="row"><div class="assistant-mark">{{ icon('music') }}</div><div><h1>Let's talk music</h1><div class="small muted">Your Empório da Música assistant</div></div></div>
+      <span class="assistant-status" id="assistant-status" role="status"><span class="status-dot"></span><span id="status-text">Ready to help</span></span>
     </header>
-    <div class="messages" id="messages" role="log" aria-label="Mensagens da conversa" aria-live="polite" aria-relevant="additions" aria-busy="false">
+    <div class="messages" id="messages" role="log" aria-label="Conversation messages" aria-live="polite" aria-relevant="additions" aria-busy="false">
       {% if not messages %}
         <div class="empty-chat" id="empty-chat">
           <div class="welcome-mark">{{ icon('music') }}</div>
-          <p class="eyebrow">Bem-vindo ao Empório</p>
-          <h2>Seu próximo som<br>começa aqui<span>.</span></h2>
-          <p class="welcome-description">Do primeiro acorde à próxima conquista. Encontre seu instrumento e tire suas dúvidas com a gente.</p>
+          <p class="eyebrow">Welcome to Empório</p>
+          <h2>Your next sound<br>starts here<span>.</span></h2>
+          <p class="welcome-description">From your first chord to your next milestone. Find your instrument and ask us anything about the store.</p>
           <div class="suggestions">
-            <button type="button" class="suggestion" data-prompt="Quais violões vocês têm por até R$ 1.000?">{{ icon('music') }}<span><strong>Encontre seu instrumento</strong><span>Violões por até R$ 1.000</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
-            <button type="button" class="suggestion" data-prompt="Qual é o preço do Yamaha C40 e quais são as formas de pagamento?">{{ icon('card') }}<span><strong>Preços e pagamento</strong><span>Conheça o Yamaha C40</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
-            <button type="button" class="suggestion" data-prompt="Quero acompanhar meu pedido. Quais dados preciso informar?">{{ icon('bag') }}<span><strong>Acompanhe seu pedido</strong><span>Consulte a situação da compra</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
-            <button type="button" class="suggestion" data-prompt="Como funciona a devolução de uma compra feita pela internet?">{{ icon('return') }}<span><strong>Trocas e devoluções</strong><span>Entenda as políticas da loja</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
+            <button type="button" class="suggestion" data-prompt="Which acoustic guitars are available for up to R$ 1.000?">{{ icon('music') }}<span><strong>Find your instrument</strong><span>Acoustic guitars under R$ 1.000</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
+            <button type="button" class="suggestion" data-prompt="What is the price of the Yamaha C40 and what are the payment options?">{{ icon('card') }}<span><strong>Prices and payment</strong><span>Discover the Yamaha C40</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
+            <button type="button" class="suggestion" data-prompt="I want to track my order. What details do you need?">{{ icon('bag') }}<span><strong>Track your order</strong><span>Check your purchase status</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
+            <button type="button" class="suggestion" data-prompt="How do returns for online purchases work?">{{ icon('return') }}<span><strong>Exchanges and returns</strong><span>Learn about store policies</span></span>{{ icon('arrow', 'suggestion-arrow') }}</button>
           </div>
         </div>
       {% endif %}
@@ -43,11 +43,11 @@
     </div>
     <div class="composer-area">
       <form class="composer" id="chat-form" data-session-id="{{ session_id }}" data-timezone="{{ timezone_name }}">
-        <label class="sr-only" for="chat-input">Sua mensagem</label>
-        <textarea id="chat-input" name="message" placeholder="Como podemos te ajudar hoje?" rows="1" maxlength="4000" required></textarea>
-        <button class="btn send-button" id="send-button" type="submit" aria-label="Enviar mensagem"><span id="send-label">Enviar</span>{{ icon('send') }}</button>
+        <label class="sr-only" for="chat-input">Your message</label>
+        <textarea id="chat-input" name="message" placeholder="How can we help you today?" rows="1" maxlength="4000" required></textarea>
+        <button class="btn send-button" id="send-button" type="submit" aria-label="Send message"><span id="send-label">Send</span>{{ icon('send') }}</button>
       </form>
-      <div class="composer-hint"><span>{{ icon('shield') }}Respostas com base no catálogo e nas políticas da loja.</span><span class="keyboard-hint">Enter para enviar · Shift + Enter para nova linha</span></div>
+      <div class="composer-hint"><span>{{ icon('shield') }}Answers based on the catalog and store policies.</span><span class="keyboard-hint">Enter to send · Shift + Enter for a new line</span></div>
     </div>
   </section>
 {% endblock %}

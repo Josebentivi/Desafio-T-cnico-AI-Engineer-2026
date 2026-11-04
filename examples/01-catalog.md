@@ -1,6 +1,6 @@
 # Example 1 — Catalog search
 
-> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+> English reviewer-facing illustrative conversation. The application replies in English.
 
 **Customer:** Which acoustic guitars do you have under R$ 1,000?
 

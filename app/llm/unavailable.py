@@ -14,6 +14,6 @@ class UnavailableLLM(LLMClient):
         tools: list[dict],
     ) -> AsyncIterator[StreamEvent]:
         raise LLMError(
-            "OPENAI_API_KEY não configurada. Copie .env.example para .env e preencha a chave."
+            "OPENAI_API_KEY is not configured. Copy .env.example to .env and provide the key."
         )
         yield StreamEvent(type="completed")

@@ -140,7 +140,7 @@ def test_active_promotion_price_and_pix_rules(conn):
     regular = catalog.get_product(81)
     assert regular["promotion"] is None
     assert regular["pix_price_brl"] == "R$ 569,91"
-    assert regular["status_label"] == "Ativo"
+    assert regular["status_label"] == "Active"
 
 
 def test_order_verification(conn):
@@ -154,7 +154,7 @@ def test_order_verification(conn):
 
     missing = orders.get_order(3, "Another Person")
     assert missing["found"] is False
-    assert "não encontrado" in missing["message"]
+    assert "not found" in missing["message"]
 
 
 def test_order_masks_pii_in_list(conn):
@@ -172,7 +172,7 @@ def test_shipping_rules():
     paid = shipping_estimate("Campo Grande", 49999)
     assert paid["free_shipping"] is False
     assert paid["fee_cents"] == 3500
-    assert paid["eta"] == "1 a 3 dias úteis"
+    assert paid["eta"] == "1 to 3 business days"
 
     outside = shipping_estimate("Dourados", 80000)
     assert outside["region"] == "outside_campo_grande"
@@ -184,8 +184,8 @@ def test_store_status_weekday_and_sunday():
     tz = ZoneInfo("America/Campo_Grande")
     monday_open = store_status(now=datetime(2026, 11, 2, 10, 0, tzinfo=tz))
     assert monday_open["is_open"] is True
-    assert monday_open["message"] == "A loja está aberta agora."
-    assert monday_open["weekday"] == "segunda-feira"
+    assert monday_open["message"] == "The store is open now."
+    assert monday_open["weekday"] == "Monday"
 
     monday_early = store_status(now=datetime(2026, 11, 2, 8, 0, tzinfo=tz))
     assert monday_early["is_open"] is False
@@ -194,7 +194,7 @@ def test_store_status_weekday_and_sunday():
     sunday = store_status(now=datetime(2026, 11, 8, 10, 0, tzinfo=tz))
     assert sunday["is_open"] is False
     assert sunday["next_opening"].startswith("2026-11-09T09:00")
-    assert "A equipe retorna segunda-feira" in sunday["message"]
+    assert "The team returns on Monday" in sunday["message"]
 
     saturday_after = store_status(now=datetime(2026, 11, 7, 14, 0, tzinfo=tz))
     assert saturday_after["is_open"] is False

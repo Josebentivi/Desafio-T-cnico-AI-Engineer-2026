@@ -1,48 +1,48 @@
 {% extends "base.html" %}
-{% block title %}Pedido · Empório da Música{% endblock %}
+{% block title %}Order · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <span class="eyebrow">Da escolha à entrega</span>
-      <h1>Pedido {% if order %}#{{ order.order_id }}{% endif %}</h1>
-      <p>Informações da compra, instrumentos e entrega.</p>
+      <span class="eyebrow">From selection to delivery</span>
+      <h1>Order {% if order %}#{{ order.order_id }}{% endif %}</h1>
+      <p>Purchase, instrument and delivery details.</p>
     </div>
-    <a class="btn secondary" href="/ops/orders">{{ icon('back') }}Voltar aos pedidos</a>
+    <a class="btn secondary" href="/ops/orders">{{ icon('back') }}Back to orders</a>
   </div>
 
   {% if not order %}
-    <div class="panel"><div class="panel-body">Pedido não encontrado.</div></div>
+    <div class="panel"><div class="panel-body">Order not found.</div></div>
   {% else %}
     <div class="detail-grid">
       <div class="panel">
         <div class="panel-head">
-          <h2>Resumo da compra</h2>
+          <h2>Purchase summary</h2>
           <span class="badge {{ 'green' if order.status == 'delivered' else 'red' if order.status == 'cancelled' else 'amber' if order.status == 'pending' else 'blue' }}">{{ order.status_label }}</span>
         </div>
         <div class="panel-body">
           <dl class="kv">
-            <dt>Cliente</dt><dd>{{ order.customer.name }}</dd>
-            <dt>Cidade</dt><dd>{{ order.customer.city }}</dd>
-            <dt>E-mail</dt><dd>{{ order.customer.email_masked }}</dd>
-            <dt>Telefone</dt><dd>{{ order.customer.phone_masked }}</dd>
-            <dt>Data da compra</dt><dd>{{ order.order_date_br }}</dd>
-            <dt>Pagamento</dt><dd>{{ order.payment_method_label }}</dd>
+            <dt>Customer</dt><dd>{{ order.customer.name }}</dd>
+            <dt>City</dt><dd>{{ order.customer.city }}</dd>
+            <dt>Email</dt><dd>{{ order.customer.email_masked }}</dd>
+            <dt>Phone</dt><dd>{{ order.customer.phone_masked }}</dd>
+            <dt>Purchase date</dt><dd>{{ order.order_date_br }}</dd>
+            <dt>Payment</dt><dd>{{ order.payment_method_label }}</dd>
             <dt>Total</dt><dd><strong>{{ order.total_brl }}</strong></dd>
-            <dt>Soma dos itens</dt><dd>{{ order.items_sum_brl }}</dd>
-            {% if order.tracking_code %}<dt>Rastreio</dt><dd class="mono">{{ order.tracking_code }}</dd>{% endif %}
-            {% if order.estimated_delivery_br %}<dt>Previsão de entrega</dt><dd>{{ order.estimated_delivery_br }}</dd>{% endif %}
+            <dt>Item subtotal</dt><dd>{{ order.items_sum_brl }}</dd>
+            {% if order.tracking_code %}<dt>Tracking</dt><dd class="mono">{{ order.tracking_code }}</dd>{% endif %}
+            {% if order.estimated_delivery_br %}<dt>Estimated delivery</dt><dd>{{ order.estimated_delivery_br }}</dd>{% endif %}
           </dl>
           {% if order.notes %}
-            <div class="warning small section-gap"><strong>Observação:</strong> {{ order.notes }}</div>
+            <div class="warning small section-gap"><strong>Source note (Portuguese):</strong> {{ order.notes }}</div>
           {% endif %}
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-head"><h2>Instrumentos do pedido</h2></div>
-        <div class="table-wrap" tabindex="0" role="region" aria-label="Itens do pedido">
+        <div class="panel-head"><h2>Order items</h2></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Order items">
           <table>
-            <thead><tr><th>Instrumento</th><th class="num">Qtd.</th><th class="num">Valor unitário</th><th class="num">Total</th></tr></thead>
+            <thead><tr><th>Instrument</th><th class="num">Qty.</th><th class="num">Unit price</th><th class="num">Total</th></tr></thead>
             <tbody>
               {% for item in order["items"] %}
                 <tr>

@@ -1,34 +1,34 @@
 {% extends "base.html" %}
-{% block title %}Visão geral · Empório da Música{% endblock %}
+{% block title %}Overview · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
-    <div><span class="eyebrow">Nos bastidores do Empório</span><h1>Visão geral</h1><p>Acompanhe o catálogo, os pedidos e o atendimento em um só lugar.</p></div>
-    <a class="btn" href="/">Abrir atendimento{{ icon('arrow') }}</a>
+    <div><span class="eyebrow">Behind the scenes</span><h1>Overview</h1><p>Explore the catalog, orders, and customer support in one place.</p></div>
+    <a class="btn" href="/">Open chat{{ icon('arrow') }}</a>
   </div>
-  <section class="dashboard-welcome" aria-label="Apresentação do painel">
-    <div><span class="eyebrow">A operação no mesmo ritmo</span><h2>Tudo em sintonia.</h2><p>Informações da loja e consultas do assistente, com transparência em cada atendimento.</p></div>
+  <section class="dashboard-welcome" aria-label="Dashboard introduction">
+    <div><span class="eyebrow">The store in harmony</span><h2>Everything in tune.</h2><p>Store information and assistant lookups, with transparency for every interaction.</p></div>
     <div class="welcome-art">{{ icon('music') }}</div>
   </section>
   <div class="cards">
-    {% for key, label, glyph, description in [('products', 'Instrumentos', 'catalog', 'No catálogo da loja'), ('orders', 'Pedidos', 'bag', 'Compras registradas'), ('customers', 'Clientes', 'users', 'Na base de atendimento'), ('promotions', 'Promoções ativas', 'tag', 'Ofertas em vigor'), ('issues', 'Pontos de atenção', 'shield', 'Verificações dos dados'), ('runs', 'Atendimentos', 'activity', 'Execuções do assistente')] %}
+    {% for key, label, glyph, description in [('products', 'Instruments', 'catalog', 'In the store catalog'), ('orders', 'Orders', 'bag', 'Recorded purchases'), ('customers', 'Customers', 'users', 'In the customer database'), ('promotions', 'Active promotions', 'tag', 'Current offers'), ('issues', 'Data issues', 'shield', 'Data quality checks'), ('runs', 'Interactions', 'activity', 'Assistant runs')] %}
     <div class="card"><div class="metric-top"><span class="label">{{ label }}</span><span class="metric-icon {{ 'amber' if key in ['promotions', 'issues'] else '' }}">{{ icon(glyph) }}</span></div><div class="value">{{ counts[key] }}</div><div class="metric-foot">{{ description }}</div></div>
     {% endfor %}
   </div>
   <section class="panel">
-    <div class="panel-head"><h2>Atendimentos recentes</h2><a href="/ops/traces">Ver atividade {{ icon('arrow') }}</a></div>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Atendimentos recentes">
-      <table><thead><tr><th>Execução</th><th>Conversa</th><th>Data e hora</th><th class="num">Tokens</th><th class="num">Tempo</th><th>Situação</th></tr></thead><tbody>
-        {% for run in recent_runs %}<tr><td><a href="/ops/traces/{{ run.run_id }}">#{{ run.run_id }}</a></td><td>{{ run.title }}</td><td class="small muted">{{ run.created_at|datetime_br }}</td><td class="num">{{ run.input_tokens + run.output_tokens }}</td><td class="num">{{ run.latency_ms }} ms</td><td><span class="badge {{ 'red' if run.error else 'green' }}">{{ 'Erro' if run.error else 'Concluído' }}</span></td></tr>
-        {% else %}<tr><td colspan="6" class="muted empty-cell">Os atendimentos aparecerão aqui assim que você conversar com o assistente.</td></tr>{% endfor %}
+    <div class="panel-head"><h2>Recent interactions</h2><a href="/ops/traces">View activity {{ icon('arrow') }}</a></div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Recent interactions">
+      <table><thead><tr><th>Run</th><th>Conversation</th><th>Date and time</th><th class="num">Tokens</th><th class="num">Time</th><th>Status</th></tr></thead><tbody>
+        {% for run in recent_runs %}<tr><td><a href="/ops/traces/{{ run.run_id }}">#{{ run.run_id }}</a></td><td>{{ run.title }}</td><td class="small muted">{{ run.created_at|datetime_br }}</td><td class="num">{{ run.input_tokens + run.output_tokens }}</td><td class="num">{{ run.latency_ms }} ms</td><td><span class="badge {{ 'red' if run.error else 'green' }}">{{ 'Error' if run.error else 'Completed' }}</span></td></tr>
+        {% else %}<tr><td colspan="6" class="muted empty-cell">Interactions will appear here once you chat with the assistant.</td></tr>{% endfor %}
       </tbody></table>
     </div>
   </section>
   <section class="panel">
-    <div class="panel-head"><h2>Qualidade dos dados</h2><a href="/ops/quality">Ver detalhes {{ icon('arrow') }}</a></div>
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Pontos de atenção dos dados">
-      <table><thead><tr><th>Nível</th><th>Registro</th><th>Observação</th></tr></thead><tbody>
+    <div class="panel-head"><h2>Data quality</h2><a href="/ops/quality">View details {{ icon('arrow') }}</a></div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Data quality issues">
+      <table><thead><tr><th>Severity</th><th>Record</th><th>Message</th></tr></thead><tbody>
         {% for issue in issues %}<tr><td><span class="badge {{ 'amber' if issue.severity == 'warning' else 'blue' }}">{{ issue.severity|ui_label }}</span></td><td class="small">{{ issue.entity_type|ui_label }} #{{ issue.entity_id }}</td><td class="small">{{ issue.message|issue_message }}</td></tr>
-        {% else %}<tr><td colspan="3" class="muted empty-cell">Nenhum ponto de atenção registrado.</td></tr>{% endfor %}
+        {% else %}<tr><td colspan="3" class="muted empty-cell">No data issues recorded.</td></tr>{% endfor %}
       </tbody></table>
     </div>
   </section>

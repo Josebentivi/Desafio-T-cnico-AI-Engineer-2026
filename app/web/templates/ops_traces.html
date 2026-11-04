@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Atividade do agente · Empório da Música{% endblock %}
+{% block title %}Agent activity · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <span class="eyebrow">Transparência em cada resposta</span>
-      <h1>Atividade do agente</h1>
-      <p>Atendimentos, consultas realizadas, consumo de tokens e tempo de resposta.</p>
+      <span class="eyebrow">Transparency in every answer</span>
+      <h1>Agent activity</h1>
+      <p>Interactions, lookups, token usage and response time.</p>
     </div>
-    <a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a>
+    <a class="btn secondary" href="/ops">{{ icon('back') }}Overview</a>
   </div>
 
   <div class="panel">
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Execuções do agente">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Agent runs">
       <table>
         <thead>
-          <tr><th>Execução</th><th>Conversa</th><th>Data e hora</th><th>Modelo</th><th>Esforço</th><th class="num">Tokens</th><th class="num">Tempo</th><th class="num">Custo</th><th class="num">Consultas</th><th>Situação</th></tr>
+          <tr><th>Run</th><th>Conversation</th><th>Date and time</th><th>Model</th><th>Effort</th><th class="num">Tokens</th><th class="num">Time</th><th class="num">Cost</th><th class="num">Lookups</th><th>Status</th></tr>
         </thead>
         <tbody>
           {% for run in runs %}
@@ -28,10 +28,10 @@
               <td class="num">{{ run.latency_ms }} ms</td>
               <td class="num">US$ {{ "%.5f"|format(run.estimated_cost_usd) }}</td>
               <td class="num">{{ run.tool_count }}</td>
-              <td>{% if run.error %}<span class="badge red">Erro</span>{% else %}<span class="badge green">Concluído</span>{% endif %}</td>
+              <td>{% if run.error %}<span class="badge red">Error</span>{% else %}<span class="badge green">Completed</span>{% endif %}</td>
             </tr>
           {% else %}
-            <tr><td colspan="10" class="muted empty-cell">Nenhum atendimento registrado. Inicie uma conversa para acompanhar as consultas aqui.</td></tr>
+            <tr><td colspan="10" class="muted empty-cell">No interactions recorded. Start a conversation to see lookups here.</td></tr>
           {% endfor %}
         </tbody>
       </table>

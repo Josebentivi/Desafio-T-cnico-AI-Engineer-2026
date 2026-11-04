@@ -77,7 +77,7 @@ def _ensure_session(request: Request, session_id: str | None = None) -> str:
         conn.execute(
             """
             INSERT INTO sessions (session_id, title, state_json, created_at, updated_at)
-            VALUES (?, 'Nova conversa', '[]', ?, ?)
+            VALUES (?, 'New conversation', '[]', ?, ?)
             """,
             (sid, now, now),
         )
@@ -103,8 +103,8 @@ def _sessions(request: Request) -> list[dict]:
         )
     ]
     for session in sessions:
-        if session["title"] == "New conversation":
-            session["title"] = "Nova conversa"
+        if session["title"] == "Nova conversa":
+            session["title"] = "New conversation"
     return sessions
 
 

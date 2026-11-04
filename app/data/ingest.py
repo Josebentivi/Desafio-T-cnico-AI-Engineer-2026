@@ -10,7 +10,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-from app.cli_parser import PortugueseArgumentParser
+from app.cli_parser import EnglishArgumentParser
 from app.config import Settings, get_settings
 from app.data.quality import run_quality_checks
 from app.db import connect, init_db, reset_db
@@ -314,7 +314,7 @@ async def ingest_all(
                 f"{settings.embedding_model}:{settings.embedding_dimensions}",
             )
         except Exception as exc:
-            print(f"Aviso: não foi possível gerar os embeddings ({exc}). Usando busca textual FTS5.", file=sys.stderr)
+            print(f"Warning: embeddings could not be generated ({exc}). Using FTS5 text search.", file=sys.stderr)
             conn.rollback()
 
     issues = run_quality_checks(conn)
@@ -336,15 +336,15 @@ async def ingest_all(
 
 
 def main() -> int:
-    parser = PortugueseArgumentParser(
-        description="Importar os arquivos CSV e as seções do manual para o SQLite."
+    parser = EnglishArgumentParser(
+        description="Import CSV files and policy sections into SQLite."
     )
-    parser.add_argument("--db", default=None, help="Caminho do banco de dados SQLite.")
-    parser.add_argument("--reset", action="store_true", help="Recriar o banco de dados do zero.")
+    parser.add_argument("--db", default=None, help="SQLite database path.")
+    parser.add_argument("--reset", action="store_true", help="Recreate the database from scratch.")
     parser.add_argument(
         "--skip-embeddings",
         action="store_true",
-        help="Usar somente busca textual FTS5, sem consultar a API de embeddings.",
+        help="Use FTS5 text search without calling the embeddings API.",
     )
     args = parser.parse_args()
 
@@ -370,16 +370,16 @@ def main() -> int:
     finally:
         conn.close()
 
-    print("Importação concluída.")
+    print("Import complete.")
     labels = {
-        "categories": "Categorias", "products": "Instrumentos", "customers": "Clientes",
-        "orders": "Pedidos", "order_items": "Itens dos pedidos", "promotions": "Promoções",
-        "policy_sections": "Seções do manual",
+        "categories": "Categories", "products": "Instruments", "customers": "Customers",
+        "orders": "Orders", "order_items": "Order items", "promotions": "Promotions",
+        "policy_sections": "Manual sections",
     }
     for name, count in summary["counts"].items():
         print(f"{labels.get(name, name)}: {count}")
-    print(f"Embeddings gerados: {summary['embedded']}")
-    print(f"Pontos de atenção registrados: {len(summary['issues'])}")
+    print(f"Embeddings generated: {summary['embedded']}")
+    print(f"Data issues recorded: {len(summary['issues'])}")
     return 0
 
 

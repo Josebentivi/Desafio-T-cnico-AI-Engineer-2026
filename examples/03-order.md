@@ -1,6 +1,6 @@
 # Example 3 — Order status with verification
 
-> English reviewer-facing translation. The application replies in Brazilian Portuguese (pt-BR).
+> English reviewer-facing illustrative conversation. The application replies in English.
 
 **Customer:** What is the status of order 1? My name is Pedro Henrique Oliveira.
 

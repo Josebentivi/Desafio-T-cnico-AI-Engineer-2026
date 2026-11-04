@@ -29,9 +29,9 @@
 
 {% macro message(role, content, created_at='') -%}
 <div class="msg {{ role }}">
-  <div class="message-avatar" aria-hidden="true">{% if role == 'assistant' %}{{ icon('music') }}{% else %}V{% endif %}</div>
+  <div class="message-avatar" aria-hidden="true">{% if role == 'assistant' %}{{ icon('music') }}{% else %}Y{% endif %}</div>
   <div class="message-content">
-    <div class="message-meta"><strong>{{ 'Empório da Música' if role == 'assistant' else 'Você' }}</strong>{% if created_at %}<time>{{ created_at|datetime_br }}</time>{% endif %}</div>
+    <div class="message-meta"><strong>{{ 'Empório da Música' if role == 'assistant' else 'You' }}</strong>{% if created_at %}<time>{{ created_at|datetime_br }}</time>{% endif %}</div>
     <div class="bubble">{% if role == 'assistant' %}{{ content|render_message }}{% else %}{{ content }}{% endif %}</div>
   </div>
 </div>

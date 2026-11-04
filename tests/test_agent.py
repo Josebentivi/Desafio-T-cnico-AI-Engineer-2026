@@ -18,8 +18,8 @@ def make_agent(conn, settings, turns):
     return Agent(conn, llm, toolbox, settings), llm
 
 
-def test_system_prompt_requires_brazilian_portuguese():
-    assert "Always answer in Brazilian Portuguese (pt-BR)" in SYSTEM_PROMPT
+def test_system_prompt_requires_english():
+    assert "Always answer in English" in SYSTEM_PROMPT
 
 
 def test_grounding_accepts_both_currency_formats():
@@ -148,7 +148,7 @@ def test_agent_stops_after_max_iterations(conn, settings):
     ]
     agent, _ = make_agent(conn, limited, turns)
     result = asyncio.run(agent.run("s5", "What time do you open?"))
-    assert "não consegui concluir a consulta" in result.text
+    assert "could not complete the lookup" in result.text
     assert conn.execute("SELECT COUNT(*) AS n FROM tool_calls").fetchone()["n"] == 2
 
 

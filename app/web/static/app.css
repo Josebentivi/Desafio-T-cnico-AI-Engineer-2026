@@ -199,7 +199,7 @@ details > summary { cursor: pointer; }
 .msg.user .message-meta { justify-content: flex-end; }
 .msg.user .bubble { background: #f5f3e9; border-color: #eae6d7; border-radius: 12px 0 12px 12px; white-space: pre-wrap; }
 .bubble del { color: var(--muted); }
-.bubble.streaming:empty::before { animation: pulse 1s infinite; color: var(--muted); content: "Consultando informações…"; }
+.bubble.streaming:empty::before { animation: pulse 1s infinite; color: var(--muted); content: "Checking information…"; }
 .bubble.streaming:not(:empty)::after { color: var(--accent); content: " ▍"; }
 .trace { margin-top: 10px; }
 .trace summary { color: #68735f; cursor: pointer; font-size: 11px; }

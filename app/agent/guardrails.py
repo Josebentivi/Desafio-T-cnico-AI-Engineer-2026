@@ -47,7 +47,7 @@ def grounding_warnings(
     if not text_values:
         return []
     if tool_call_count == 0:
-        return ["A resposta menciona valores em reais sem consultar os dados da loja."]
+        return ["The answer mentions BRL values without looking up store data."]
     allowed: set[int] = set()
     for output in tool_outputs:
         _collect_tool_values(output, allowed)
@@ -55,7 +55,7 @@ def grounding_warnings(
     missing = sorted(text_values - allowed)
     if missing:
         return [
-            "Valores da resposta não encontrados nos resultados das consultas: "
+            "Values in the answer were not found in lookup results: "
             + ", ".join(format_brl(value) for value in missing)
         ]
     return []
@@ -63,7 +63,7 @@ def grounding_warnings(
 
 def validate_user_message(text: str) -> str | None:
     if not text or not text.strip():
-        return "A mensagem está vazia."
+        return "The message is empty."
     if len(text) > MAX_USER_MESSAGE_CHARS:
-        return f"A mensagem é muito longa (máximo de {MAX_USER_MESSAGE_CHARS} caracteres)."
+        return f"The message is too long (maximum {MAX_USER_MESSAGE_CHARS} characters)."
     return None

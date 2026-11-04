@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Pedidos · Empório da Música{% endblock %}
+{% block title %}Orders · Empório da Música{% endblock %}
 {% block content %}
 <div id="ops-content">
-  <div class="page-head"><div><span class="eyebrow">Da escolha à entrega</span><h1>Pedidos</h1><p role="status">{{ orders|length }} {{ 'pedido encontrado' if orders|length == 1 else 'pedidos encontrados' }}. Dados de contato protegidos.</p></div><a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a></div>
+  <div class="page-head"><div><span class="eyebrow">From selection to delivery</span><h1>Orders</h1><p role="status">{{ orders|length }} {{ 'order found' if orders|length == 1 else 'orders found' }}. Contact details are masked.</p></div><a class="btn secondary" href="/ops">{{ icon('back') }}Overview</a></div>
   <form class="filters" method="get" action="/ops/orders" hx-get="/ops/orders" hx-target="#ops-content" hx-select="#ops-content" hx-swap="outerHTML" hx-push-url="true" hx-trigger="submit, change">
-    <div class="field"><label for="q">Buscar pedido</label><input id="q" name="q" value="{{ q }}" placeholder="Número do pedido ou nome do cliente"></div>
-    <div class="field"><label for="status">Situação</label><select id="status" name="status"><option value="">Todas as situações</option>{% for value in ['delivered', 'shipped', 'confirmed', 'pending', 'cancelled'] %}<option value="{{ value }}" {{ 'selected' if status == value else '' }}>{{ value|ui_label }}</option>{% endfor %}</select></div>
-    <button class="btn" type="submit">{{ icon('search') }}Filtrar</button>
+    <div class="field"><label for="q">Search orders</label><input id="q" name="q" value="{{ q }}" placeholder="Order number or customer name"></div>
+    <div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">All statuses</option>{% for value in ['delivered', 'shipped', 'confirmed', 'pending', 'cancelled'] %}<option value="{{ value }}" {{ 'selected' if status == value else '' }}>{{ value|ui_label }}</option>{% endfor %}</select></div>
+    <button class="btn" type="submit">{{ icon('search') }}Filter</button>
   </form>
-  <section class="panel"><div class="table-wrap" tabindex="0" role="region" aria-label="Pedidos da loja">
-    <table><thead><tr><th>Pedido</th><th>Cliente</th><th>Cidade</th><th>Data</th><th>Situação</th><th class="num">Total</th><th>Pagamento</th><th class="num">Itens</th><th>Rastreio</th></tr></thead><tbody>
+  <section class="panel"><div class="table-wrap" tabindex="0" role="region" aria-label="Store orders">
+    <table><thead><tr><th>Order</th><th>Customer</th><th>City</th><th>Date</th><th>Status</th><th class="num">Total</th><th>Payment</th><th class="num">Items</th><th>Tracking</th></tr></thead><tbody>
       {% for order in orders %}<tr><td><a href="/ops/orders/{{ order.order_id }}">#{{ order.order_id }}</a></td><td>{{ order.customer_name }}<div class="small muted">{{ order.customer_email_masked }}<br>{{ order.customer_phone_masked }}</div></td><td class="small">{{ order.city }}</td><td class="small">{{ order.order_date_br }}</td>
         <td><span class="badge {{ 'green' if order.status == 'delivered' else 'red' if order.status == 'cancelled' else 'amber' if order.status == 'pending' else 'blue' }}">{{ order.status_label }}</span></td>
         <td class="num">{{ order.total_brl }}</td><td class="small">{{ order.payment_method_label }}</td><td class="num">{{ order.item_count }}</td><td class="mono">{{ order.tracking_code or '—' }}</td></tr>
-      {% else %}<tr><td colspan="9" class="muted empty-cell">Nenhum pedido encontrado. Tente ajustar os filtros.</td></tr>{% endfor %}
+      {% else %}<tr><td colspan="9" class="muted empty-cell">No orders found. Try adjusting the filters.</td></tr>{% endfor %}
     </tbody></table>
   </div></section>
 </div>

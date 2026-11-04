@@ -7,7 +7,7 @@ from app.main import create_app
 
 
 def make_client(conn, settings, turns=None):
-    app = create_app(settings, conn=conn, llm=FakeLLM(turns or [FakeTurn(text="Olá!")]))
+    app = create_app(settings, conn=conn, llm=FakeLLM(turns or [FakeTurn(text="Hello!")]))
     return TestClient(app)
 
 
@@ -26,9 +26,9 @@ def test_chat_page_sets_session_cookie(conn, settings):
     with make_client(conn, settings) as client:
         response = client.get("/")
         assert response.status_code == 200
-        assert "Vamos falar de música?" in response.text
-        assert '<html lang="pt-BR">' in response.text
-        assert 'for="chat-input">Sua mensagem</label>' in response.text
+        assert "Let's talk music" in response.text
+        assert '<html lang="en">' in response.text
+        assert 'for="chat-input">Your message</label>' in response.text
         assert response.cookies.get("session_id")
 
 
@@ -83,24 +83,24 @@ def test_ops_pages(conn, settings):
             assert response.status_code == 200, path
 
 
-def test_ops_ui_is_portuguese(conn, settings):
+def test_ops_ui_is_english(conn, settings):
     with make_client(conn, settings) as client:
         dashboard = client.get("/ops")
-        assert "Visão geral" in dashboard.text
-        assert "Atendimentos recentes" in dashboard.text
+        assert "Overview" in dashboard.text
+        assert "Recent interactions" in dashboard.text
 
         catalog = client.get("/ops/catalog")
-        assert "Disponibilidade" in catalog.text
-        assert "Promoção" in catalog.text
-        assert "Violões" in catalog.text
+        assert "Availability" in catalog.text
+        assert "Promotion" in catalog.text
+        assert "Acoustic guitars" in catalog.text
 
         orders = client.get("/ops/orders")
-        assert "Rastreio" in orders.text
-        assert "Nenhum pedido encontrado." not in orders.text
-        assert "Entregue" in orders.text
+        assert "Tracking" in orders.text
+        assert "No orders found." not in orders.text
+        assert "Delivered" in orders.text
 
         policy = client.get("/ops/policy")
-        assert "Seções do manual" in policy.text
+        assert "Manual sections" in policy.text
 
 
 def test_ops_detail_pages(conn, settings):
@@ -108,13 +108,13 @@ def test_ops_detail_pages(conn, settings):
         product = client.get("/ops/catalog/81")
         assert product.status_code == 200
         assert "Yamaha C40" in product.text
-        assert "Formas de pagamento" in product.text
-        assert "Tampo" in product.text
-        assert "Não" in product.text
+        assert "Payment methods" in product.text
+        assert "Top" in product.text
+        assert "No" in product.text
 
         missing_product = client.get("/ops/catalog/9999")
         assert missing_product.status_code == 404
-        assert "Instrumento não encontrado." in missing_product.text
+        assert "Instrument not found." in missing_product.text
 
         order = client.get("/ops/orders/3")
         assert order.status_code == 200
@@ -123,7 +123,7 @@ def test_ops_detail_pages(conn, settings):
 
         missing_order = client.get("/ops/orders/9999")
         assert missing_order.status_code == 404
-        assert "Pedido não encontrado." in missing_order.text
+        assert "Order not found." in missing_order.text
 
 
 def test_ops_policy_search(conn, settings):
@@ -150,7 +150,7 @@ def test_catalog_htmx_response_contains_updated_count_and_filters(conn, settings
         )
         assert response.status_code == 200
         partial = response.text.split('<div id="ops-content">', 1)[1]
-        assert "1 instrumento encontrado" in partial
+        assert "1 instrument found" in partial
         assert 'value="discontinued" selected' in partial
         assert "Shelby SN-7C" in partial
         assert "Yamaha C40" not in partial
@@ -163,26 +163,26 @@ def test_chat_history_renders_after_stream_and_switches_sessions(conn, settings)
         page = client.get("/")
         assert "Preciso de um violão" in page.text
         assert "Olá! Como posso ajudar?" in page.text
-        assert "Você" in page.text
-        assert " às " in page.text
+        assert "You" in page.text
+        assert " at " in page.text
         second = client.post("/sessions/new", follow_redirects=False).cookies["session_id"]
         assert first != second
-        assert "Nova conversa" in client.get("/").text
+        assert "New conversation" in client.get("/").text
         client.get(f"/sessions/{first}")
         assert "Olá! Como posso ajudar?" in client.get("/").text
 
 
-def test_legacy_quality_messages_display_in_portuguese(conn, settings):
+def test_legacy_quality_messages_display_in_english(conn, settings):
     conn.execute(
         "UPDATE data_quality_issues SET message = ? WHERE code = 'empty_category'",
-        ("Category 'Brass' has no products in the CSV.",),
+        ("A categoria 'Instrumentos de Sopro (Metais)' não possui produtos no CSV.",),
     )
     conn.commit()
     with make_client(conn, settings) as client:
         page = client.get("/ops/quality")
         assert "Instrumentos de Sopro (Metais)" in page.text
-        assert "não possui produtos no CSV" in page.text
-        assert "has no products" not in page.text
+        assert "has no products in the CSV" in page.text
+        assert "não possui produtos" not in page.text
 
 
 def test_message_rendering_escapes_html_and_keeps_supported_emphasis(conn, settings):

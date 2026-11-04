@@ -4,7 +4,7 @@ Text-message customer service agent for the fictional **Empório da Música**, a
 
 Repository: https://github.com/Josebentivi/Desafio-T-cnico-AI-Engineer-2026
 
-The application runs in **Brazilian Portuguese (pt-BR)**: the agent's replies, web interface, CLI, validation, and runtime messages. The source CSVs and policy manual are also in Portuguese. **This README, explanatory documentation, and documented example conversations remain in English** for reviewers; the examples are reviewer-facing translations or illustrations of the Portuguese runtime. Product names, customer names, technical identifiers, and policy section numbers retain their source spelling.
+The agent replies, web interface, CLI, validation, runtime messages, and documentation are in **English**. The supplied CSVs and policy manual remain in Portuguese; source descriptions and policy text in the operational panel are labeled accordingly. Product names, customer names, technical identifiers, and policy section numbers retain their source spelling. The examples are reviewer-facing translations or illustrations.
 
 The agent can check the catalog and orders in SQLite and retrieve rules from the policy manual. Its prompt requires a tool lookup before stating a price, stock level, deadline, or order status; a separate guardrail records warnings for ungrounded currency values. The app includes a streaming chat and a read-only operational panel with catalog, orders, policies, data quality, and agent traces.
 
@@ -74,7 +74,7 @@ On first startup, if the database is empty, the app seeds the CSVs without embed
 
 ```bash
 python -m app.cli chat
-python -m app.cli ask "Quais violões vocês têm por até R$ 1000?"
+python -m app.cli ask "Which acoustic guitars are available for up to R$ 1000?"
 python -m app.cli status
 ```
 
@@ -89,7 +89,7 @@ node --check app/web/static/chat.js
 node --check app/web/static/shell.js
 ```
 
-The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. It covers ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes. Localization coverage includes Portuguese labels and errors, Brazilian date formatting with the store timezone, older quality messages, session switching, HTML escaping, and filtered HTMX responses.
+The test suite uses `FakeLLM` and `FakeEmbeddingClient`; it makes no real OpenAI calls. It covers ingestion, money, catalog, orders, shipping, store hours, policy retrieval (including English queries), the agent loop, guardrails, and HTTP routes. Interface coverage includes English labels and errors, dates with the store timezone, older quality messages, session switching, HTML escaping, and filtered HTMX responses.
 
 ### 5. Re-extract the manual (optional)
 
@@ -148,7 +148,7 @@ The interface uses a light workspace, graphite navigation, and amber accents. Sh
 
 CSS and JavaScript URLs include a SHA-256 content version (`?v=...`). A changed asset gets a new URL on the next page render, including CSS-only edits without restarting the server. HTML and static responses use `Cache-Control: no-cache` to require revalidation while retaining ETag/304 support. This prevents older cached styles or scripts from being combined with updated templates; normal page reloads pick up the current interface. The cache middleware only updates response headers and does not buffer chat streaming.
 
-Display timestamps use the configured `APP_TIMEZONE` (default `America/Campo_Grande`) and Brazilian formatting. Raw tool names, database status codes, and diagnostic JSON retain their technical identifiers; surrounding labels are Portuguese. Existing conversation content is retained as originally recorded. Quality messages from older English ingestions are localized at presentation time, so updating the interface does not require rebuilding the database.
+Display timestamps use the configured `APP_TIMEZONE` (default `America/Campo_Grande`) and day/month/year formatting. Raw tool names, database status codes, and diagnostic JSON retain their technical identifiers; surrounding labels are English. Existing conversation content is retained as originally recorded. Quality messages from Portuguese ingestions are translated at presentation time, so updating the interface does not require rebuilding the database.
 
 ### Database
 
@@ -169,9 +169,9 @@ The manual is small, so I did not use a vector database. The strategy is hybrid:
 
 I did not use `sqlite-vec` or FAISS: with ~26 sections, brute force is instant and avoids native dependencies. If the manual grows, the retrieval interface allows the implementation to be replaced.
 
-### Portuguese runtime and multilingual search
+### English interaction and multilingual search
 
-The application and source data are in Portuguese. English queries are also accepted for retrieval, while the agent still replies in Brazilian Portuguese. Retrieval uses two layers:
+The application responds in English while the source data is in Portuguese. Retrieval uses two layers to bridge the languages:
 
 - **Semantic retrieval:** `text-embedding-3-large` is multilingual, so English questions can match Portuguese policy sections.
 - **Lexical expansion:** `app/domain/search_aliases.py` maps English terms to Portuguese catalog and policy terms before FTS5 search. Examples:
@@ -209,7 +209,7 @@ Order verification requires `order_id` and a customer identifier (name, phone, o
 
 ### Prompt and guardrails
 
-The system prompt is in `app/agent/prompts.py` and defines persona, scope, mandatory tool use, privacy, tone, and format. It explicitly says: **always answer in Brazilian Portuguese (pt-BR)**, including when the customer, earlier conversation turns, or tool results use English.
+The system prompt is in `app/agent/prompts.py` and defines persona, scope, mandatory tool use, privacy, tone, and format. It explicitly says: **always answer in English**, including when the customer, earlier conversation turns, or tool results use Portuguese.
 
 Beyond the prompt:
 
@@ -290,7 +290,7 @@ examples/                  # English example conversations
 
 ## Example conversations
 
-These files are English reviewer-facing translations or illustrations. The running assistant responds in Brazilian Portuguese. Example 2 is a translated transcript of an actual local run with live catalog lookups; the other examples illustrate the intended interactions and tool use.
+These files are English reviewer-facing translations or illustrations. The running assistant responds in English. Example 2 is a translated transcript of an earlier Portuguese-language local run with live catalog lookups; the other examples illustrate the intended interactions and tool use.
 
 - `examples/01-catalog.md` — acoustic guitars under R$ 1,000
 - `examples/02-price-stock.md` — Yamaha C40 price, stock, and PIX
@@ -320,7 +320,7 @@ This project was developed with support from **OpenCode**. The assistant was use
 - write and run tests;
 - review data and policies;
 - write and review the English documentation and example conversations;
-- redesign the responsive interface and localize the application runtime to Brazilian Portuguese;
+- redesign the responsive interface and adapt the application runtime to the requested language;
 - diagnose and fix integration problems and verify the resulting behavior.
 
 Decisions were reviewed and validated with local tests. No API keys or secrets were intentionally committed. The repository includes the customer data supplied with the challenge; it contains names and contact fields, and publishing the repository makes those CSVs available to readers. This disclosure is included as requested in the challenge brief.
@@ -332,4 +332,4 @@ Decisions were reviewed and validated with local tests. No API keys or secrets w
 - `orders.total_brl` is the source of truth, even when it differs from the line-item sum.
 - Orders do not contain an actual delivery date. An estimated date is not proof of receipt; the agent should ask the customer to confirm the actual date when assessing a return.
 - The policy closes the store on Sundays and holidays. Sundays are included in the opening-time calculation; a holiday calendar is not modeled, so holiday openings must be confirmed with the team.
-- The agent, interface, and CLI use Brazilian Portuguese. This README and explanatory documentation, including reviewer-facing example translations, remain in English. Source names and policy text retain their original spelling.
+- The agent, interface, CLI, and documentation use English. Source names and policy text retain their original spelling.

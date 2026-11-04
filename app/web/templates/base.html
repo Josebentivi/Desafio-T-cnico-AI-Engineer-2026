@@ -1,6 +1,6 @@
 {% from 'macros.html' import icon %}
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
@@ -13,34 +13,34 @@
 </head>
 <body>
   {% set current = active_nav|default('chat') %}
-  {% set pages = [('chat', '/', 'chat', 'Atendimento'), ('dashboard', '/ops', 'grid', 'Visão geral'), ('catalog', '/ops/catalog', 'catalog', 'Catálogo'), ('orders', '/ops/orders', 'bag', 'Pedidos'), ('traces', '/ops/traces', 'activity', 'Atividade do agente'), ('policy', '/ops/policy', 'book', 'Políticas da loja'), ('quality', '/ops/quality', 'shield', 'Qualidade dos dados')] %}
-  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
-  <aside class="app-sidebar" id="app-navigation" aria-label="Navegação principal">
-    <a class="brand" href="/" aria-label="Empório da Música — início">
+  {% set pages = [('chat', '/', 'chat', 'Support'), ('dashboard', '/ops', 'grid', 'Overview'), ('catalog', '/ops/catalog', 'catalog', 'Catalog'), ('orders', '/ops/orders', 'bag', 'Orders'), ('traces', '/ops/traces', 'activity', 'Agent activity'), ('policy', '/ops/policy', 'book', 'Store policies'), ('quality', '/ops/quality', 'shield', 'Data quality')] %}
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <aside class="app-sidebar" id="app-navigation" aria-label="Main navigation">
+    <a class="brand" href="/" aria-label="Empório da Música — home">
       <span class="brand-mark">{{ icon('music') }}</span>
       <span>Empório<span class="brand-subtitle">da Música<span class="brand-period">.</span></span></span>
     </a>
-    <button class="icon-button nav-close" type="button" data-close-nav aria-label="Fechar navegação">{{ icon('close') }}</button>
-    <div class="nav-label">Seu espaço musical</div>
+    <button class="icon-button nav-close" type="button" data-close-nav aria-label="Close navigation">{{ icon('close') }}</button>
+    <div class="nav-label">Your music space</div>
     <nav class="primary-nav">
       {% for key, href, glyph, label in pages %}
-        {% if key == 'dashboard' %}<div class="nav-label nav-divider">Operação da loja</div>{% endif %}
+        {% if key == 'dashboard' %}<div class="nav-label nav-divider">Store operations</div>{% endif %}
         <a href="{{ href }}" class="nav-link {{ 'active' if current == key else '' }}" {% if current == key %}aria-current="page"{% endif %}>{{ icon(glyph) }}<span>{{ label }}</span>{% if current == key %}<span class="nav-dot"></span>{% endif %}</a>
       {% endfor %}
     </nav>
     <div class="sidebar-footer">
-      <div class="sidebar-store">{{ icon('pin') }}<div>Campo Grande, MS<span>Instrumentos. Histórias. Música.</span></div></div>
-      <div class="sidebar-signature">FEITO PARA QUEM VIVE A MÚSICA</div>
+      <div class="sidebar-store">{{ icon('pin') }}<div>Campo Grande, MS<span>Instruments. Stories. Music.</span></div></div>
+      <div class="sidebar-signature">MADE FOR PEOPLE WHO LOVE MUSIC</div>
     </div>
   </aside>
-  <button class="nav-backdrop" type="button" data-close-nav aria-label="Fechar navegação" tabindex="-1" hidden></button>
+  <button class="nav-backdrop" type="button" data-close-nav aria-label="Close navigation" tabindex="-1" hidden></button>
   <div class="workspace">
     <header class="workspace-header">
       <div class="row">
-        <button class="icon-button nav-toggle" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Abrir navegação">{{ icon('menu') }}</button>
+        <button class="icon-button nav-toggle" id="nav-toggle" type="button" aria-controls="app-navigation" aria-expanded="false" aria-label="Open navigation">{{ icon('menu') }}</button>
         <span class="breadcrumb">Empório da Música<span aria-hidden="true">/</span><strong>{% for key, href, glyph, label in pages %}{% if key == current %}{{ label }}{% endif %}{% endfor %}</strong></span>
       </div>
-      <span class="workspace-badge"><span class="status-dot"></span>{{ 'Assistente virtual' if current == 'chat' else 'Painel operacional' }}</span>
+      <span class="workspace-badge"><span class="status-dot"></span>{{ 'Virtual assistant' if current == 'chat' else 'Operations panel' }}</span>
     </header>
     <main id="main-content" class="{% block main_class %}container{% endblock %}" tabindex="-1">
       {% block content %}{% endblock %}

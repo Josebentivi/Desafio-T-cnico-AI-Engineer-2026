@@ -33,7 +33,7 @@ def _as_dict(item) -> dict:
 class OpenAIResponsesClient(LLMClient):
     def __init__(self, settings: Settings):
         if not settings.has_openai_key:
-            raise ValueError("OPENAI_API_KEY não configurada")
+            raise ValueError("OPENAI_API_KEY is not configured")
         kwargs = {"api_key": settings.openai_api_key}
         if settings.openai_base_url:
             kwargs["base_url"] = settings.openai_base_url
@@ -90,12 +90,12 @@ class OpenAIResponsesClient(LLMClient):
                 elif event_type == "response.completed":
                     response = getattr(event, "response", None)
                     if response is None:
-                        raise LLMError("A resposta foi concluída sem conteúdo retornado")
+                        raise LLMError("The response completed without a response object")
                     yield StreamEvent(type="completed", response=self._to_model_response(response))
                 elif event_type in {"response.failed", "error"}:
                     message = getattr(event, "message", "") or getattr(event, "error", "")
-                    raise LLMError(str(message) or f"Falha na API: {event_type}")
+                    raise LLMError(str(message) or f"API failure: {event_type}")
         except LLMError:
             raise
         except Exception as exc:
-            raise LLMError(f"Falha na consulta à OpenAI: {exc}") from exc
+            raise LLMError(f"OpenAI request failed: {exc}") from exc

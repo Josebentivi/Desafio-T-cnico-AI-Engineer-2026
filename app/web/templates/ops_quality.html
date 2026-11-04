@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Qualidade dos dados · Empório da Música{% endblock %}
+{% block title %}Data quality · Empório da Música{% endblock %}
 {% block content %}
   <div class="page-head">
     <div>
-      <span class="eyebrow">Uma base para boas respostas</span>
-      <h1>Qualidade dos dados</h1>
-      <p>Pontos de atenção identificados na importação dos dados da loja.</p>
+      <span class="eyebrow">A foundation for reliable answers</span>
+      <h1>Data quality</h1>
+      <p>Issues identified when importing the store data.</p>
     </div>
-    <a class="btn secondary" href="/ops">{{ icon('back') }}Visão geral</a>
+    <a class="btn secondary" href="/ops">{{ icon('back') }}Overview</a>
   </div>
 
   <div class="panel">
-    <div class="table-wrap" tabindex="0" role="region" aria-label="Pontos de atenção dos dados">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Data quality issues">
       <table>
-        <thead><tr><th>Nível</th><th>Verificação</th><th>Registro</th><th>Observação</th></tr></thead>
+        <thead><tr><th>Severity</th><th>Check</th><th>Record</th><th>Message</th></tr></thead>
         <tbody>
           {% for issue in issues %}
             <tr>
@@ -25,7 +25,7 @@
               <td class="small">{{ issue.message|issue_message }}</td>
             </tr>
           {% else %}
-            <tr><td colspan="4" class="muted empty-cell">Nenhum ponto de atenção registrado.</td></tr>
+            <tr><td colspan="4" class="muted empty-cell">No data issues recorded.</td></tr>
           {% endfor %}
         </tbody>
       </table>

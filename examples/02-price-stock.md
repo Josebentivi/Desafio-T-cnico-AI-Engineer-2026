@@ -1,6 +1,6 @@
 # Example 2 — Live price, stock, and PIX lookup
 
-> English translation of an actual local conversation with the OpenAI-backed agent. The running application responds in Brazilian Portuguese (pt-BR).
+> English translation of an actual local conversation with the OpenAI-backed agent, recorded when the runtime used Portuguese. The runtime now responds in English.
 
 **Customer:** How much is the Yamaha C40?
 

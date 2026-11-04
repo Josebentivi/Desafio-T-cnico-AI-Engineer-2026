@@ -8,13 +8,13 @@
   const status = document.getElementById("assistant-status");
   const statusText = document.getElementById("status-text");
   const toolNames = {
-    search_products: "Busca no catálogo",
-    get_product: "Detalhes do instrumento",
-    get_active_promotions: "Promoções ativas",
-    get_order: "Consulta de pedido",
-    search_policy: "Consulta às políticas",
-    get_store_status: "Horário da loja",
-    get_shipping_estimate: "Estimativa de frete",
+    search_products: "Catalog search",
+    get_product: "Instrument details",
+    get_active_promotions: "Active promotions",
+    get_order: "Order lookup",
+    search_policy: "Policy lookup",
+    get_store_status: "Store hours",
+    get_shipping_estimate: "Shipping estimate",
   };
   let sending = false;
   let autoScroll = true;
@@ -39,18 +39,18 @@
     avatar.className = "message-avatar";
     avatar.setAttribute("aria-hidden", "true");
     if (role === "assistant") avatar.appendChild(document.querySelector(".assistant-mark .icon").cloneNode(true));
-    else avatar.textContent = "V";
+    else avatar.textContent = "Y";
     const content = document.createElement("div");
     content.className = "message-content";
     const meta = document.createElement("div");
     meta.className = "message-meta";
     const name = document.createElement("strong");
-    name.textContent = role === "assistant" ? "Empório da Música" : "Você";
+    name.textContent = role === "assistant" ? "Empório da Música" : "You";
     const time = document.createElement("time");
     time.dateTime = new Date().toISOString();
     time.textContent = new Intl.DateTimeFormat("pt-BR", {
       timeZone: form.dataset.timezone || "America/Campo_Grande", dateStyle: "short", timeStyle: "short",
-    }).format(new Date()).replace(", ", " às ");
+    }).format(new Date()).replace(", ", " at ");
     meta.append(name, time);
     const bubble = document.createElement("div");
     bubble.className = "bubble";
@@ -67,7 +67,7 @@
     const details = document.createElement("details");
     details.className = "trace";
     const summary = document.createElement("summary");
-    summary.textContent = "Ver fontes consultadas";
+    summary.textContent = "View sources consulted";
     const body = document.createElement("div");
     body.className = "trace-body";
     details.append(summary, body);
@@ -80,15 +80,15 @@
     item.className = "trace-item";
     const title = document.createElement("div");
     title.className = "name";
-    title.textContent = toolNames[data.name] || "Consulta ao sistema";
+    title.textContent = toolNames[data.name] || "System lookup";
     const progress = document.createElement("div");
     progress.className = "muted";
-    progress.textContent = "Consultando…";
+    progress.textContent = "Checking…";
     const technical = document.createElement("details");
     const summary = document.createElement("summary");
-    summary.textContent = "Dados técnicos";
+    summary.textContent = "Technical details";
     const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify({ ferramenta: data.name, parametros: data.arguments }, null, 2);
+    pre.textContent = JSON.stringify({ tool: data.name, parameters: data.arguments }, null, 2);
     technical.append(summary, pre);
     item.append(title, progress, technical);
     body.appendChild(item);
@@ -98,7 +98,7 @@
   async function sendMessage(text) {
     if (sending) return;
     if (!text.trim()) {
-      input.setCustomValidity("Digite sua mensagem para começar.");
+      input.setCustomValidity("Type a message to get started.");
       input.reportValidity();
       return;
     }
@@ -110,9 +110,9 @@
     input.style.height = "auto";
     input.disabled = true;
     button.disabled = true;
-    sendLabel.textContent = "Aguarde";
+    sendLabel.textContent = "Please wait";
     status.classList.add("busy");
-    statusText.textContent = "Preparando sua resposta";
+    statusText.textContent = "Preparing your response";
     messages.setAttribute("aria-busy", "true");
     const assistant = appendMessage("assistant", "");
     assistant.bubble.classList.add("streaming");
@@ -135,16 +135,16 @@
       if (eventName === "token") {
         finalText += data.text || "";
         assistant.bubble.innerHTML = renderText(finalText);
-        statusText.textContent = "Escrevendo sua resposta";
+        statusText.textContent = "Writing your response";
       } else if (eventName === "tool_call") {
         if (!traceBody) traceBody = createTrace(assistant.content);
         pendingTrace = addTraceItem(traceBody, data);
-        statusText.textContent = toolNames[data.name] || "Consultando informações";
+        statusText.textContent = toolNames[data.name] || "Checking information";
       } else if (eventName === "tool_result") {
         if (!traceBody) traceBody = createTrace(assistant.content);
         const trace = pendingTrace || addTraceItem(traceBody, data);
-        trace.progress.textContent = `${data.error ? "Consulta com erro" : "Consulta concluída"} · ${data.latency_ms || 0} ms`;
-        trace.pre.textContent += "\n\n" + JSON.stringify({ resultado: data.output, erro: data.error || undefined }, null, 2).slice(0, 8000);
+        trace.progress.textContent = `${data.error ? "Lookup failed" : "Lookup completed"} · ${data.latency_ms || 0} ms`;
+        trace.pre.textContent += "\n\n" + JSON.stringify({ result: data.output, error: data.error || undefined }, null, 2).slice(0, 8000);
         pendingTrace = null;
       } else if (eventName === "done") {
         completed = true;
@@ -153,7 +153,7 @@
         assistant.bubble.classList.remove("streaming");
         const currentSession = document.querySelector(".session-link.active");
         const title = currentSession?.querySelector(".title");
-        if (title?.textContent === "Nova conversa") {
+        if (title?.textContent === "New conversation") {
           title.textContent = [...text.trim().replace(/\s+/g, " ")].slice(0, 60).join("");
         }
         const sessionTime = currentSession?.querySelector(".time");
@@ -166,7 +166,7 @@
         }
       } else if (eventName === "error") {
         failed = true;
-        finalText = data.message || "Não foi possível concluir o atendimento. Tente novamente.";
+        finalText = data.message || "Could not complete the request. Please try again.";
         assistant.bubble.textContent = finalText;
         assistant.bubble.classList.remove("streaming");
       }
@@ -180,7 +180,7 @@
       const response = await fetch("/chat/stream", {
         method: "POST", body: formData, headers: { Accept: "text/event-stream" },
       });
-      if (!response.ok || !response.body) throw new Error("Resposta indisponível");
+      if (!response.ok || !response.body) throw new Error("Response unavailable");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -198,20 +198,20 @@
       if (!completed && !failed) {
         failed = true;
         assistant.bubble.textContent = finalText
-          ? `${finalText}\n\nA resposta foi interrompida. Tente novamente.`
-          : "Não recebemos uma resposta completa. Tente novamente.";
+          ? `${finalText}\n\nThe response was interrupted. Please try again.`
+          : "We did not receive a complete response. Please try again.";
       }
     } catch {
       failed = true;
-      assistant.bubble.textContent = "Não foi possível concluir a conexão com o atendimento. Tente novamente em instantes.";
+      assistant.bubble.textContent = "Could not connect to support. Please try again shortly.";
     } finally {
       assistant.bubble.classList.remove("streaming");
       messages.setAttribute("aria-busy", "false");
       input.disabled = false;
       button.disabled = false;
-      sendLabel.textContent = "Enviar";
+      sendLabel.textContent = "Send";
       status.classList.remove("busy");
-      statusText.textContent = failed ? "Tente enviar novamente" : "Pronto para ajudar";
+      statusText.textContent = failed ? "Please try again" : "Ready to help";
       sending = false;
       input.focus({ preventScroll: true });
       scrollToBottom();
@@ -234,7 +234,7 @@
     input.style.height = `${Math.min(input.scrollHeight, 160)}px`;
   });
   input.addEventListener("invalid", () => {
-    if (input.validity.valueMissing) input.setCustomValidity("Digite sua mensagem para começar.");
+    if (input.validity.valueMissing) input.setCustomValidity("Type a message to get started.");
   });
   document.querySelectorAll(".suggestion").forEach((suggestion) => {
     suggestion.addEventListener("click", () => {
